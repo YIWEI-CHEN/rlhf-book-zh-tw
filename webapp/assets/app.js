@@ -54,11 +54,112 @@
       });
     }
   } else {
-    content.querySelectorAll('a[href^="bibliography.html#ref-"]').forEach((citation) => {
+    const citations = [...content.querySelectorAll('a[href^="bibliography.html#ref-"]')];
+    citations.forEach((citation) => {
       citation.classList.add('citation');
       citation.setAttribute('aria-label', '查看參考文獻 ' + citation.textContent);
-      citation.title = '查看參考文獻 ' + citation.textContent;
     });
+
+    if (citations.length) {
+      const tooltip = document.createElement('div');
+      tooltip.id = 'citation-tooltip';
+      tooltip.className = 'citation-tooltip';
+      tooltip.setAttribute('role', 'tooltip');
+      tooltip.hidden = true;
+
+      const tooltipTitle = document.createElement('strong');
+      tooltipTitle.className = 'citation-tooltip-title';
+      const tooltipText = document.createElement('span');
+      tooltipText.className = 'citation-tooltip-text';
+      tooltip.append(tooltipTitle, tooltipText);
+      document.body.appendChild(tooltip);
+
+      let activeCitation = null;
+      let hideTimer = null;
+      let bibliographyPromise = null;
+
+      const loadBibliography = () => {
+        if (!bibliographyPromise) {
+          bibliographyPromise = fetch('../assets/bibliography.json')
+            .then((response) => {
+              if (!response.ok) throw new Error('HTTP ' + response.status);
+              return response.json();
+            });
+        }
+        return bibliographyPromise;
+      };
+
+      const positionTooltip = (citation) => {
+        if (!citation || tooltip.hidden) return;
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.left = '0px';
+        tooltip.style.top = '0px';
+
+        const anchorRect = citation.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const edge = 10;
+        const gap = 10;
+        let left = anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2;
+        left = Math.max(edge, Math.min(left, window.innerWidth - tooltipRect.width - edge));
+        let top = anchorRect.top - tooltipRect.height - gap;
+        if (top < edge) top = anchorRect.bottom + gap;
+
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+        tooltip.style.visibility = 'visible';
+      };
+
+      const hideTooltip = () => {
+        if (activeCitation) activeCitation.removeAttribute('aria-describedby');
+        activeCitation = null;
+        tooltip.hidden = true;
+      };
+
+      const scheduleHide = () => {
+        window.clearTimeout(hideTimer);
+        hideTimer = window.setTimeout(hideTooltip, 120);
+      };
+
+      const showTooltip = async (citation) => {
+        window.clearTimeout(hideTimer);
+        const match = citation.getAttribute('href').match(/#ref-(\d+)$/);
+        if (!match) return;
+        const number = match[1];
+
+        if (activeCitation && activeCitation !== citation) {
+          activeCitation.removeAttribute('aria-describedby');
+        }
+        activeCitation = citation;
+        citation.setAttribute('aria-describedby', tooltip.id);
+        tooltipTitle.textContent = '參考文獻 [' + number + ']';
+        tooltipText.textContent = '載入中…';
+        tooltip.hidden = false;
+        positionTooltip(citation);
+
+        try {
+          const bibliography = await loadBibliography();
+          if (activeCitation !== citation) return;
+          tooltipText.textContent = bibliography[number] || '找不到這筆參考文獻。';
+        } catch (error) {
+          if (activeCitation !== citation) return;
+          tooltipText.textContent = '無法載入參考文獻內容。';
+          console.error('bibliography tooltip failed:', error);
+        }
+        positionTooltip(citation);
+      };
+
+      citations.forEach((citation) => {
+        citation.addEventListener('mouseenter', () => showTooltip(citation));
+        citation.addEventListener('mouseleave', scheduleHide);
+        citation.addEventListener('focus', () => showTooltip(citation));
+        citation.addEventListener('blur', scheduleHide);
+      });
+      window.addEventListener('resize', () => positionTooltip(activeCitation));
+      window.addEventListener('scroll', () => positionTooltip(activeCitation), { passive: true });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') hideTooltip();
+      });
+    }
   }
 
   // 側欄目錄（h2 / h3）＋捲動高亮

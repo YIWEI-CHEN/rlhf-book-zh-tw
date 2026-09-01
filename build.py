@@ -8,6 +8,7 @@
 重新執行即可整站重建。
 """
 import html
+import json
 import os
 import re
 import subprocess
@@ -18,6 +19,7 @@ WEBAPP = os.path.join(ROOT, "webapp")
 CHAPDIR = os.path.join(WEBAPP, "chapters")
 PDF = os.path.join(ROOT, "RL_from_human_feedback.pdf")
 BIBLIOGRAPHY = os.path.join(CONTENT, "bibliography.md")
+BIBLIOGRAPHY_DATA = os.path.join(WEBAPP, "assets", "bibliography.json")
 
 BIBLIOGRAPHY_HEADER = [
     "# 參考文獻（Bibliography）",
@@ -231,7 +233,21 @@ def normalize_bibliography():
         with open(BIBLIOGRAPHY, "w", encoding="utf-8") as f:
             f.write(normalized)
         print(f"normalized bibliography ({len(entries)} entries)")
-    return {number for number, _ in entries}
+    return entries
+
+
+def build_bibliography_data(entries):
+    """Write the shared reference lookup used by citation hover tooltips."""
+    payload = {str(number): text for number, text in entries}
+    serialized = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    current = ""
+    if os.path.exists(BIBLIOGRAPHY_DATA):
+        with open(BIBLIOGRAPHY_DATA, encoding="utf-8") as f:
+            current = f.read()
+    if current != serialized:
+        with open(BIBLIOGRAPHY_DATA, "w", encoding="utf-8") as f:
+            f.write(serialized)
+        print(f"built bibliography tooltip data ({len(entries)} entries)")
 
 
 def link_citations(md, valid_references):
@@ -260,7 +276,9 @@ def link_citations(md, valid_references):
 
 def build_pages():
     os.makedirs(CHAPDIR, exist_ok=True)
-    valid_references = normalize_bibliography()
+    bibliography_entries = normalize_bibliography()
+    build_bibliography_data(bibliography_entries)
+    valid_references = {number for number, _ in bibliography_entries}
     built = {}
     for ch in CHAPTERS:
         src = os.path.join(CONTENT, ch["id"] + ".md")

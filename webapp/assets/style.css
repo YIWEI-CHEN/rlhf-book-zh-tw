@@ -119,6 +119,30 @@ img { max-width: 100%; height: auto; }
   background: var(--accent-soft);
   outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
+.citation-tooltip {
+  position: fixed;
+  z-index: 1000;
+  width: max-content;
+  max-width: min(34rem, calc(100vw - 20px));
+  padding: .75rem .9rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: var(--shadow);
+  font-size: .84rem;
+  line-height: 1.6;
+  text-align: left;
+  pointer-events: none;
+}
+.citation-tooltip-title {
+  display: block;
+  margin-bottom: .2rem;
+  color: var(--accent);
+  font-size: .78rem;
+  letter-spacing: .02em;
+}
+.citation-tooltip-text { display: block; }
 
 /* ===== 互動實驗室 ===== */
 .lab-banner {
