@@ -4,6 +4,33 @@
   const content = document.getElementById('content');
   if (!mdEl || !content) return;
 
+  // Marked 的預設 emphasis 規則在粗體標記緊貼 CJK 文字、且內容混有全形括號或
+  // 英文片段時，可能將 **…** 原樣顯示。這個 inline tokenizer 會辨識這類合法的
+  // 粗體標記，讓 Marked 正確產生粗體內容。
+  marked.use({
+    extensions: [{
+      name: 'boundarySafeStrong',
+      level: 'inline',
+      start(src) {
+        const index = src.indexOf('**');
+        return index >= 0 ? index : undefined;
+      },
+      tokenizer(src) {
+        const match = /^\*\*(?![\s*])((?:(?!\*\*)[^\n])*?[^\s*])\*\*(?!\*)/.exec(src);
+        if (!match) return;
+        return {
+          type: 'boundarySafeStrong',
+          raw: match[0],
+          tokens: this.lexer.inlineTokens(match[1]),
+        };
+      },
+      renderer(token) {
+        return '<strong>' + this.parser.parseInline(token.tokens) + '</strong>';
+      },
+      childTokens: ['tokens'],
+    }],
+  });
+
   let md = mdEl.textContent
     .replaceAll('<\\/script', '</script')
     .replaceAll('../webapp/assets/', '../assets/');
