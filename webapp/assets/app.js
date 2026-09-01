@@ -67,11 +67,9 @@
       tooltip.setAttribute('role', 'tooltip');
       tooltip.hidden = true;
 
-      const tooltipTitle = document.createElement('strong');
-      tooltipTitle.className = 'citation-tooltip-title';
       const tooltipText = document.createElement('span');
       tooltipText.className = 'citation-tooltip-text';
-      tooltip.append(tooltipTitle, tooltipText);
+      tooltip.appendChild(tooltipText);
       document.body.appendChild(tooltip);
 
       let activeCitation = null;
@@ -131,7 +129,6 @@
         }
         activeCitation = citation;
         citation.setAttribute('aria-describedby', tooltip.id);
-        tooltipTitle.textContent = '參考文獻 [' + number + ']';
         tooltipText.textContent = '載入中…';
         tooltip.hidden = false;
         positionTooltip(citation);

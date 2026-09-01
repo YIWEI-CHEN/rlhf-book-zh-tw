@@ -135,13 +135,6 @@ img { max-width: 100%; height: auto; }
   text-align: left;
   pointer-events: none;
 }
-.citation-tooltip-title {
-  display: block;
-  margin-bottom: .2rem;
-  color: var(--accent);
-  font-size: .78rem;
-  letter-spacing: .02em;
-}
 .citation-tooltip-text { display: block; }
 
 /* ===== 互動實驗室 ===== */
