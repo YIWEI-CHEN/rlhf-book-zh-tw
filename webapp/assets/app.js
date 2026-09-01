@@ -62,6 +62,60 @@
     });
   }
 
+  // 讓正文中的「式 N／公式 N／方程式 N」連回同章具有 \tag{N} 的公式。
+  const equations = new Map();
+  content.querySelectorAll('.katex-display .tag').forEach((tag) => {
+    const match = tag.textContent.trim().match(/^\((\d+)\)$/);
+    const equation = tag.closest('.katex-display');
+    if (!match || !equation || equations.has(match[1])) return;
+    const number = match[1];
+    equation.id = 'eq-' + number;
+    equation.classList.add('numbered-equation');
+    equations.set(number, equation);
+  });
+
+  if (equations.size) {
+    const equationReference = /(?:方程式|公式|式)\s*(?:[（(]\s*)?(\d+)(?:\s*[）)])?/g;
+    const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+    const referenceNodes = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      const parent = node.parentElement;
+      if (!parent || parent.closest('a, code, pre, .katex, script, style')) continue;
+      equationReference.lastIndex = 0;
+      if ([...node.data.matchAll(equationReference)].some((match) => equations.has(match[1]))) {
+        referenceNodes.push(node);
+      }
+    }
+
+    referenceNodes.forEach((node) => {
+      const fragment = document.createDocumentFragment();
+      let cursor = 0;
+      equationReference.lastIndex = 0;
+      for (const match of node.data.matchAll(equationReference)) {
+        const number = match[1];
+        if (!equations.has(number)) continue;
+        fragment.append(node.data.slice(cursor, match.index));
+        const link = document.createElement('a');
+        link.href = '#eq-' + number;
+        link.className = 'equation-ref';
+        link.textContent = match[0];
+        link.setAttribute('aria-label', '跳至' + match[0]);
+        fragment.append(link);
+        cursor = match.index + match[0].length;
+      }
+      fragment.append(node.data.slice(cursor));
+      node.replaceWith(fragment);
+    });
+
+    if (/^#eq-\d+$/.test(window.location.hash)) {
+      requestAnimationFrame(() => {
+        const target = document.getElementById(window.location.hash.slice(1));
+        if (target) target.scrollIntoView({ block: 'center' });
+      });
+    }
+  }
+
   // 全書共用 citation 導覽：章節的 [N] 連到文獻，文獻條目提供穩定錨點。
   const pageName = window.location.pathname.split('/').pop();
   if (pageName === 'bibliography.html') {

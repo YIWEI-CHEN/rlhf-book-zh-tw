@@ -101,6 +101,19 @@ img { max-width: 100%; height: auto; }
 .prose hr { border: none; border-top: 1px solid var(--border); margin: 2.4rem 0; }
 .prose .katex-display { overflow-x: auto; overflow-y: hidden; padding: .3rem 0; }
 .prose .katex { font-size: 1.06em; }
+.prose a.equation-ref {
+  white-space: nowrap;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.prose .numbered-equation {
+  scroll-margin-top: 5rem;
+  border-radius: 6px;
+}
+.prose .numbered-equation:target {
+  background: var(--accent-soft);
+  outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
 
 /* ===== 引用與參考文獻 ===== */
 .prose a.citation {
