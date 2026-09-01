@@ -35,9 +35,9 @@
 
 拒絕採樣的運作方式是：先蒐集新的候選補全（completion），根據一個已訓練好的獎勵模型（reward model）加以篩選，然後只用其中最好的補全來微調原始模型（使用與指令微調相同的損失函數）。
 
-這個名稱源自計算統計學（computational statistics）[209]：當人們想從一個複雜的分布中採樣、卻沒有直接的方法時，可以改從一個較容易建模的分布中採樣，並使用一個啟發式規則（heuristic）來檢查樣本是否可以接受。對應到語言模型上，目標分布是「對提示（prompt）的高品質補全」，篩選器是獎勵模型，而採樣分布則是當前的模型。
+這個名稱源自計算統計學（computational statistics）[[209]](bibliography.html#ref-209)：當人們想從一個複雜的分布中採樣、卻沒有直接的方法時，可以改從一個較容易建模的分布中採樣，並使用一個啟發式規則（heuristic）來檢查樣本是否可以接受。對應到語言模型上，目標分布是「對提示（prompt）的高品質補全」，篩選器是獎勵模型，而採樣分布則是當前的模型。
 
-WebGPT [4]、Anthropic 的 Helpful and Harmless 代理人 [5]、OpenAI 著名的過程獎勵模型（process reward models）論文 [50]、Llama 2 Chat 模型 [49]，以及其他開創性研究，全都使用了這個基準方法；較近期的研究則將它直接形式化——例如將其應用於多模態對齊的 RAFT [210]，以及 Statistical Rejection Sampling Optimization（RSO）[211]，後者從原理層面概述了拒絕採樣與其他偏好學習目標之間的關係。
+WebGPT [[4]](bibliography.html#ref-4)、Anthropic 的 Helpful and Harmless 代理人 [[5]](bibliography.html#ref-5)、OpenAI 著名的過程獎勵模型（process reward models）論文 [[50]](bibliography.html#ref-50)、Llama 2 Chat 模型 [[49]](bibliography.html#ref-49)，以及其他開創性研究，全都使用了這個基準方法；較近期的研究則將它直接形式化——例如將其應用於多模態對齊的 RAFT [[210]](bibliography.html#ref-210)，以及 Statistical Rejection Sampling Optimization（RSO）[[211]](bibliography.html#ref-211)，後者從原理層面概述了拒絕採樣與其他偏好學習目標之間的關係。
 
 *在本章中，我們一律以 $x$ 表示提示、以 $y$ 表示補全。這種記號在語言模型文獻中很常見——這些方法操作的是完整的「提示–補全」對，而非個別 token。*
 

@@ -49,7 +49,7 @@ $$
 
 實務上，我們會對每一個下一詞元（next-token）預測使用交叉熵（cross-entropy）損失，計算方式是將序列中的真實詞元與模型的預測結果進行比較。
 
-語言模型有許多不同架構，在知識、速度與其他效能特性上各有取捨。現代語言模型（包括 ChatGPT、Claude、Gemini 等）最常使用**僅解碼器 Transformer（decoder-only Transformers）** [404]。Transformer 的核心創新在於大量運用**自注意力（self-attention）** [405] 機制，讓模型能直接關注（attend to）上下文中的概念並學習複雜的映射。在本書中，特別是第 5 章討論獎勵模型時，我們會探討如何為 Transformer 加入新的頭（head），或修改其語言建模（language modeling, LM）頭。LM 頭是最後一層線性投影層，負責將模型的內部嵌入空間映射到分詞器空間（亦即詞彙表，vocabulary）。本書會展示語言模型不同的「頭」可以用來將模型微調至不同用途——在 RLHF 中最常見的情境就是訓練獎勵模型，這在第 5 章有重點說明。
+語言模型有許多不同架構，在知識、速度與其他效能特性上各有取捨。現代語言模型（包括 ChatGPT、Claude、Gemini 等）最常使用**僅解碼器 Transformer（decoder-only Transformers）** [[404]](bibliography.html#ref-404)。Transformer 的核心創新在於大量運用**自注意力（self-attention）** [[405]](bibliography.html#ref-405) 機制，讓模型能直接關注（attend to）上下文中的概念並學習複雜的映射。在本書中，特別是第 5 章討論獎勵模型時，我們會探討如何為 Transformer 加入新的頭（head），或修改其語言建模（language modeling, LM）頭。LM 頭是最後一層線性投影層，負責將模型的內部嵌入空間映射到分詞器空間（亦即詞彙表，vocabulary）。本書會展示語言模型不同的「頭」可以用來將模型微調至不同用途——在 RLHF 中最常見的情境就是訓練獎勵模型，這在第 5 章有重點說明。
 
 ## A.2 機器學習（Machine Learning）
 
@@ -105,10 +105,10 @@ $$
 
 ## A.6 延伸詞彙表（Extended Glossary）
 
-- **思維鏈（Chain-of-Thought, CoT）**：思維鏈是語言模型的一種特定行為，指模型被引導以逐步拆解問題的形式作答。其最初的版本是透過提示詞「Let's think step by step」（讓我們一步一步思考）[374] 實現的。
+- **思維鏈（Chain-of-Thought, CoT）**：思維鏈是語言模型的一種特定行為，指模型被引導以逐步拆解問題的形式作答。其最初的版本是透過提示詞「Let's think step by step」（讓我們一步一步思考）[[374]](bibliography.html#ref-374) 實現的。
 - **蒸餾（Distillation）**：蒸餾是訓練 AI 模型的一類通用做法，指以較強模型的輸出來訓練另一個模型。這是一種已知能打造強大小型模型的合成資料類型。大多數模型會明確規範蒸餾相關的規則：開放權重（open-weight）模型透過授權條款，僅能經由 API 存取的模型則透過服務條款。「蒸餾」一詞如今的用法已經超載（overloaded），與機器學習文獻中的特定技術定義有所出入。
 - **情境內學習（In-context Learning, ICL）**：這裡的「in-context」指語言模型上下文視窗（context window）內的任何資訊，通常是加到提示詞中的內容。情境內學習最簡單的形式是在提示詞前加入形式相似的範例；進階版本則能針對特定使用情境學習該納入哪些資訊。
-- **（師生式）知識蒸餾（(Teacher-student) Knowledge Distillation）**：從特定教師模型到學生模型的知識蒸餾是上述蒸餾的一種特定型態，也是此術語的起源。它是一種特定的深度學習方法，透過修改神經網路損失函數，讓學生模型從教師模型在多個潛在詞元／對數機率（logits）上的對數機率中學習，而不是直接從單一選定的輸出學習 [276]。以知識蒸餾訓練的現代模型系列，例如 Gemma 2 [406] 或 Gemma 3。在語言建模的設定下，下一詞元損失函數可修改如下 [287]，其中學生模型 $P_\theta$ 向教師分布 $P_\phi$ 學習：
+- **（師生式）知識蒸餾（(Teacher-student) Knowledge Distillation）**：從特定教師模型到學生模型的知識蒸餾是上述蒸餾的一種特定型態，也是此術語的起源。它是一種特定的深度學習方法，透過修改神經網路損失函數，讓學生模型從教師模型在多個潛在詞元／對數機率（logits）上的對數機率中學習，而不是直接從單一選定的輸出學習 [[276]](bibliography.html#ref-276)。以知識蒸餾訓練的現代模型系列，例如 Gemma 2 [[406]](bibliography.html#ref-406) 或 Gemma 3。在語言建模的設定下，下一詞元損失函數可修改如下 [[287]](bibliography.html#ref-287)，其中學生模型 $P_\theta$ 向教師分布 $P_\phi$ 學習：
 
 $$
 \mathcal{L}_{\mathrm{KD}}(\theta) = -\mathbb{E}_{x \sim \mathcal{D}} \left[ \sum_{t=1}^{T} P_\phi(x_t \mid x_{<t}) \log P_\theta(x_t \mid x_{<t}) \right]. \tag{158}

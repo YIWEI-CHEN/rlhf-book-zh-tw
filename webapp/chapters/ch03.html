@@ -37,7 +37,7 @@
 
 ## 3.1 問題形式化（Problem Formulation）
 
-基於人類回饋的強化學習（Reinforcement Learning from Human Feedback, RLHF）的最佳化建構在標準 RL 設定之上。在 RL 中，代理人（agent）根據環境狀態 $s_t$，從策略（policy）$\pi(a_t \mid s_t)$ 中採樣動作 $a_t$，以最大化獎勵 $r(s_t, a_t)$ [54]。策略是一個將每個狀態映射到動作機率分布的函數。演變為現代 RLHF 文獻的早期策略屬於所謂的深度強化學習（deep reinforcement learning）——即使用神經網路來學習上述函數。傳統上，環境依照轉移（transition，即動態 dynamics）$p(s_{t+1} \mid s_t, a_t)$ 演化，並具有初始狀態分布 $\rho_0(s_0)$。策略與動態共同誘導出一個軌跡分布（trajectory distribution）。一條軌跡的整體機率，是初始狀態機率、策略所做的每一次動作選擇、以及環境所產生的每一次狀態轉移的乘積：
+基於人類回饋的強化學習（Reinforcement Learning from Human Feedback, RLHF）的最佳化建構在標準 RL 設定之上。在 RL 中，代理人（agent）根據環境狀態 $s_t$，從策略（policy）$\pi(a_t \mid s_t)$ 中採樣動作 $a_t$，以最大化獎勵 $r(s_t, a_t)$ [[54]](bibliography.html#ref-54)。策略是一個將每個狀態映射到動作機率分布的函數。演變為現代 RLHF 文獻的早期策略屬於所謂的深度強化學習（deep reinforcement learning）——即使用神經網路來學習上述函數。傳統上，環境依照轉移（transition，即動態 dynamics）$p(s_{t+1} \mid s_t, a_t)$ 演化，並具有初始狀態分布 $\rho_0(s_0)$。策略與動態共同誘導出一個軌跡分布（trajectory distribution）。一條軌跡的整體機率，是初始狀態機率、策略所做的每一次動作選擇、以及環境所產生的每一次狀態轉移的乘積：
 
 $$p_\pi(\tau) = \rho_0(s_0) \prod_{t=0}^{T-1} \pi(a_t \mid s_t)\, p(s_{t+1} \mid s_t, a_t). \tag{1}$$
 
@@ -156,7 +156,7 @@ $$\max_\pi \; \mathbb{E}_{\tau \sim \pi}\left[r_\theta(s_t, a_t)\right] - \beta\
 在接下來的章節中，我們會介紹許多後訓練的最佳化工具。其中不少——例如拒絕採樣（第 9 章）以及像 DPO 這類直接對齊演算法（第 8 章）——遠比讓 RL 順利運作來得簡單。儘管替代方案如此簡單，基於 RL 的方法仍持續勝出。有些趨勢十分明顯，例如搭配可驗證獎勵的強化學習（reinforcement learning with verifiable rewards, RLVR）所帶來的推論時擴展（inference-time scaling）；但事實證明，RL 是非常適合語言模型的最佳化工具。相較於指令微調或 DPO 類演算法，實作 RL 需要大得多的基礎設施投資；不過，容我用比較口語的說法：它所提供的梯度更新「通常對模型幫助很大」。這很難量化，但會反覆以下列幾種形式出現：
 
 - RL 階段可以「修補」模型的粗糙之處，讓模型更容易對話或更穩健（這可能來自於使用 vLLM 之類的推論工具進行訓練，使其具備數值穩定性）。確切原因在文獻中尚未廣為人知，但其真實性反映在 RL 如今日益普及的事實上。
-- RL 可以「外科手術式」地進行——模型很擅長學習提示詞分布落在何處，而且 RL 傾向於不會「壓扁」模型的一般能力。一個好例子是 Tülu 3 僅在數學提示詞上以 RL 訓練，卻能在廣泛的任務組合上維持能力 [6]。
+- RL 可以「外科手術式」地進行——模型很擅長學習提示詞分布落在何處，而且 RL 傾向於不會「壓扁」模型的一般能力。一個好例子是 Tülu 3 僅在數學提示詞上以 RL 訓練，卻能在廣泛的任務組合上維持能力 [[6]](bibliography.html#ref-6)。
 
 整體而言，語言模型上的 RL 損失函數穩健、可擴展、有效且靈活，開啟了大片新的實驗領域。而最初帶領我們走上這條路的方法，正是 RLHF 的研究工作。
 
@@ -166,7 +166,7 @@ $$\max_\pi \; \mathbb{E}_{\tau \sim \pi}\left[r_\theta(s_t, a_t)\right] - \beta\
 
 ### 3.2.1 InstructGPT
 
-在 ChatGPT 剛問世前後，廣為接受的（「經典」）語言模型後訓練方法有三大步驟，其中 RLHF 是核心 [55] [3] [5]。這三個步驟建立在「基礎」（base）語言模型（即在大規模網路文字上訓練的下一個 token 預測模型）之上，總結如下並見圖 8：
+在 ChatGPT 剛問世前後，廣為接受的（「經典」）語言模型後訓練方法有三大步驟，其中 RLHF 是核心 [[55]](bibliography.html#ref-55) [[3]](bibliography.html#ref-3) [[5]](bibliography.html#ref-5)。這三個步驟建立在「基礎」（base）語言模型（即在大規模網路文字上訓練的下一個 token 預測模型）之上，總結如下並見圖 8：
 
 1. **在約 1 萬筆範例上進行指令微調（Instruction tuning on ~10K examples）**：這讓模型學會遵循問答格式，並主要從人工撰寫的資料中學到一些基本技能。
 2. **在約 10 萬筆成對提示詞上訓練獎勵模型（Training a reward model on ~100K pairwise prompts）**（論文使用 33K 筆提示詞）：此模型從指令微調後的檢查點（checkpoint）訓練而來，捕捉人們希望在最終訓練中建模的多元價值。獎勵模型是 RLHF 的最佳化目標。
@@ -180,13 +180,13 @@ RLHF 完成後，模型便準備好部署給使用者。這個配方是現代 RL
 
 ### 3.2.2 Tülu 3
 
-現代版本的後訓練涉及多得多的模型版本與訓練階段（也就是遠超過 Llama 2 所記載的 5 個 RLHF 步驟 [49]）。下方圖 9 展示了一個例子：模型在收斂之前經歷多次訓練迭代。
+現代版本的後訓練涉及多得多的模型版本與訓練階段（也就是遠超過 Llama 2 所記載的 5 個 RLHF 步驟 [[49]](bibliography.html#ref-49)）。下方圖 9 展示了一個例子：模型在收斂之前經歷多次訓練迭代。
 
 ![圖](../webapp/assets/figures/fig-p028-2.png)
 
 *圖 9：現代多輪後訓練流程的示意圖。*
 
-這個時代及其後所訓練的最複雜模型，並未公開其訓練流程的完整細節。到了 2026 年，ChatGPT 或 Claude 等領先模型都涉及多輪迭代訓練。這甚至可能包括先訓練多個專門模型、再將權重合併（merge）在一起，以得到能勝任多種子任務的最終模型的技術 [56]（例如 Cohere 的 Command A [57]）。
+這個時代及其後所訓練的最複雜模型，並未公開其訓練流程的完整細節。到了 2026 年，ChatGPT 或 Claude 等領先模型都涉及多輪迭代訓練。這甚至可能包括先訓練多個專門模型、再將權重合併（merge）在一起，以得到能勝任多種子任務的最終模型的技術 [[56]](bibliography.html#ref-56)（例如 Cohere 的 Command A [[57]](bibliography.html#ref-57)）。
 
 ![圖](../webapp/assets/figures/fig-p029-1.png)
 
@@ -198,18 +198,18 @@ Tülu 3 是這種多階段後訓練方法中一個完全開放、且 RLHF 扮演
 2. **在約 100 萬組偏好對上使用 on-policy 偏好資料（On-policy preference data on ~1M preference pairs）**：此階段大幅提升模型的對話能力（chattiness）（例如 Arena（前身為 ChatBotArena）或 AlpacaEval 2 的表現），同時也改善前述指令微調階段中提到的技能。
 3. **在約 1 萬筆提示詞上進行可驗證獎勵的強化學習（Reinforcement Learning with Verifiable Rewards on ~10K prompts）**：此階段是一次小規模的強化學習訓練，用來提升數學等核心技能，同時維持整體效能（如今被視為 DeepSeek R1 等現代推理模型的先聲）。
 
-這個配方已成功應用於 Llama 3.1 [6]、OLMo 2 [58] 與 SmolLM 系列模型 [59]。
+這個配方已成功應用於 Llama 3.1 [[6]](bibliography.html#ref-6)、OLMo 2 [[58]](bibliography.html#ref-58) 與 SmolLM 系列模型 [[59]](bibliography.html#ref-59)。
 
 ### 3.2.3 DeepSeek R1
 
-隨著推理語言模型（reasoning language models）——例如 OpenAI 的 o1——的興起，後訓練的最佳實務再次演進，重新排序並重新分配各訓練階段之間的運算資源。推理模型後訓練配方中記載最清楚的是 DeepSeek R1 [15]；阿里巴巴較大的 Qwen 3 模型（即僅 32B 與 225B MoE 模型）[60]，或小米的 MiMo 7B [61]，也仿效了此做法。DeepSeek 配方如下：
+隨著推理語言模型（reasoning language models）——例如 OpenAI 的 o1——的興起，後訓練的最佳實務再次演進，重新排序並重新分配各訓練階段之間的運算資源。推理模型後訓練配方中記載最清楚的是 DeepSeek R1 [[15]](bibliography.html#ref-15)；阿里巴巴較大的 Qwen 3 模型（即僅 32B 與 225B MoE 模型）[[60]](bibliography.html#ref-60)，或小米的 MiMo 7B [[61]](bibliography.html#ref-61)，也仿效了此做法。DeepSeek 配方如下：
 
 1. **以 10 萬筆以上的 on-policy 推理樣本進行「冷啟動」（"Cold-start" with 100K+ on-policy reasoning samples）**：這些資料採樣自較早的 RL 檢查點 R1-Zero，並經過大量過濾，用以在 DeepSeek-V3-Base 上灌注特定的推理過程。DeepSeek 使用「冷啟動」一詞來描述 RL 如何從少量監督資料中學習。
 2. **大規模強化學習訓練（Large-scale reinforcement learning training）**：此階段讓模型反覆處理推理問題，在多種基準測試上執行 RLVR「直到收斂」。
 3. **拒絕採樣與 SFT（Rejection sampling and SFT）**：接近收斂時，他們對 RL 檢查點套用拒絕採樣，建立一個約 80 萬筆樣本的 SFT 資料集，然後在大約 3/4 推理問題與 1/4 一般查詢的過濾混合資料上微調模型，以產生一個通用模型。
 4. **混合式強化學習訓練（Mixed reinforcement learning training）**：在推理問題（可驗證獎勵）上，搭配一般偏好調校的獎勵模型，對模型做最後的打磨。
 
-如同前文，這個配方也存在各種演進，特別是在步驟 3 與 4——即在將模型開放給使用者之前完成最終定稿的階段。許多模型一開始就使用量身打造的指令資料集，其中包含從既有模型大量過濾與打磨而來的思維鏈（chain-of-thought）序列，讓模型只靠 SFT 就能快速達到強大的行為表現，之後才進入 RL 階段 [62]。
+如同前文，這個配方也存在各種演進，特別是在步驟 3 與 4——即在將模型開放給使用者之前完成最終定稿的階段。許多模型一開始就使用量身打造的指令資料集，其中包含從既有模型大量過濾與打磨而來的思維鏈（chain-of-thought）序列，讓模型只靠 SFT 就能快速達到強大的行為表現，之後才進入 RL 階段 [[62]](bibliography.html#ref-62)。
 
 </script>
 <script src="../assets/marked.min.js"></script>

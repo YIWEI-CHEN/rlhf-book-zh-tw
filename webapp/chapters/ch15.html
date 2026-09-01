@@ -59,11 +59,11 @@ $$\mathcal{D}_{\text{KL}}(P\|Q) = \sum_{x \in \mathcal{X}} P(x) \log\left(\frac{
 
 ### 15.1.1 參考模型到生成內容（Reference Model to Generations）
 
-KL 懲罰最常見的實作方式，是比較訓練期間生成的詞元與一個靜態參考模型之間的距離。其直覺是：你所訓練的出發模型具有一種你希望保持接近的風格。這個參考模型通常是指令微調（instruction tuned）模型，但也可以是先前的 RL 檢查點（checkpoint）。透過簡單的代換，我們取樣的模型就變成 $\pi_{\text{RL}}(x)$ 與 $\pi_{\text{ref}}(x)$，如上方公式 139 所示（在標準定義中通常寫作 $P$ 與 $Q$，套用於 RL 的 KL 懲罰時）。這樣的 KL 散度懲罰早在大型語言模型流行之前，就已被應用於對話代理人（dialogue agents）[354]，而 KL 控制也很快確立為微調預訓練模型的核心技術 [355]。
+KL 懲罰最常見的實作方式，是比較訓練期間生成的詞元與一個靜態參考模型之間的距離。其直覺是：你所訓練的出發模型具有一種你希望保持接近的風格。這個參考模型通常是指令微調（instruction tuned）模型，但也可以是先前的 RL 檢查點（checkpoint）。透過簡單的代換，我們取樣的模型就變成 $\pi_{\text{RL}}(x)$ 與 $\pi_{\text{ref}}(x)$，如上方公式 139 所示（在標準定義中通常寫作 $P$ 與 $Q$，套用於 RL 的 KL 懲罰時）。這樣的 KL 散度懲罰早在大型語言模型流行之前，就已被應用於對話代理人（dialogue agents）[[354]](bibliography.html#ref-354)，而 KL 控制也很快確立為微調預訓練模型的核心技術 [[355]](bibliography.html#ref-355)。
 
 ### 15.1.2 實作範例（Implementation Example）
 
-實務上，KL 散度的實作經常採用近似 [126]，使實作簡單許多。根據上述定義，當直接從分布 $P$ 取樣時，KL 的加總可以轉換為期望值（這裡的 $x$ 是樣本空間上的一般隨機變數，而非本書其他地方使用的提示記號）。在這種情況下，$P$ 是目前正在訓練之模型的生成分布（也就是說，不是參考模型）。此時，KL 散度的計算改為如下：
+實務上，KL 散度的實作經常採用近似 [[126]](bibliography.html#ref-126)，使實作簡單許多。根據上述定義，當直接從分布 $P$ 取樣時，KL 的加總可以轉換為期望值（這裡的 $x$ 是樣本空間上的一般隨機變數，而非本書其他地方使用的提示記號）。在這種情況下，$P$ 是目前正在訓練之模型的生成分布（也就是說，不是參考模型）。此時，KL 散度的計算改為如下：
 
 $$\mathcal{D}_{\text{KL}}(P \,\|\, Q) = \mathbb{E}_{x \sim P} \left[ \log P(x) - \log Q(x) \right]. \tag{141}$$
 
@@ -101,7 +101,7 @@ kl_full   = F.kl_div(ref_logprobs, logprobs, reduction='batchmean')
 
 ### 15.2.1 SFT 記憶、RL 泛化（SFT Memorizes, RL Generalizes）
 
-後訓練社群一直面臨一個核心問題：在單一任務上訓練時，模型學到的是可以遷移到未見變體的可泛化規則，還是記住了訓練分布的表面模式？Chu et al. 2025 [9] 以一項受控實證研究回答了這個問題，直接分離出後訓練方法——SFT 對上 RL——對分布外（out-of-distribution, OOD）泛化的影響。答案十分明確：RL 學到可遷移的規則，而 SFT 記憶訓練資料，並在分布偏移下崩潰。
+後訓練社群一直面臨一個核心問題：在單一任務上訓練時，模型學到的是可以遷移到未見變體的可泛化規則，還是記住了訓練分布的表面模式？Chu et al. 2025 [[9]](bibliography.html#ref-9) 以一項受控實證研究回答了這個問題，直接分離出後訓練方法——SFT 對上 RL——對分布外（out-of-distribution, OOD）泛化的影響。答案十分明確：RL 學到可遷移的規則，而 SFT 記憶訓練資料，並在分布偏移下崩潰。
 
 該研究使用兩個內建規則變化的環境來理解其中的權衡：
 
@@ -112,7 +112,7 @@ kl_full   = F.kl_div(ref_logprobs, logprobs, reduction='batchmean')
 
 ### 15.2.2 以做促記：On-Policy 資料減緩遺忘（Retaining by Doing: On-Policy Data Mitigates Forgetting）
 
-上一節顯示，在單一任務上 RL 能泛化、而 SFT 會記憶。Chen et al. 2025 [356] 則提出互補的問題：當*依序*（sequentially）在多個任務上訓練時，模型能否保留它原本已經知道的東西？他們發現，RL 在目標任務上取得與 SFT 相當或更高的增益，同時遺忘的程度遠低於 SFT，並將這項優勢追溯至兩個目標函數在最佳化內容上的根本差異。
+上一節顯示，在單一任務上 RL 能泛化、而 SFT 會記憶。Chen et al. 2025 [[356]](bibliography.html#ref-356) 則提出互補的問題：當*依序*（sequentially）在多個任務上訓練時，模型能否保留它原本已經知道的東西？他們發現，RL 在目標任務上取得與 SFT 相當或更高的增益，同時遺忘的程度遠低於 SFT，並將這項優勢追溯至兩個目標函數在最佳化內容上的根本差異。
 
 要理解這兩種方法的行為為何如此不同，我們可以透過 KL 散度的視角來檢視它們的目標。在本節中，我們首先說明兩種常見的後訓練方法可以對應到 KL 散度的兩個方向，然後解釋將它們作為損失函數使用時的數值行為，如何轉化為不同的模型行為。
 
@@ -196,7 +196,7 @@ RL 的模式尋求行為——反向 KL 的一種結構性性質——保留了�
 
 ### 15.2.3 RL 的剃刀：為何線上 RL 遺忘得更少（RL's Razor: Why Online RL Forgets Less）
 
-上一節顯示，on-policy 取樣驅動了 RL 對遺忘的抵抗力，並將其機制追溯到前向對反向 KL 的動態。對任何給定的任務而言，存在許多能達成高表現的不同策略。Shenfeld et al. 2026 [357] 對 RL 的泛化提出了互補的觀點，提出 **RL 的剃刀**（RL's Razor）論題，其主張如下：
+上一節顯示，on-policy 取樣驅動了 RL 對遺忘的抵抗力，並將其機制追溯到前向對反向 KL 的動態。對任何給定的任務而言，存在許多能達成高表現的不同策略。Shenfeld et al. 2026 [[357]](bibliography.html#ref-357) 對 RL 的泛化提出了互補的觀點，提出 **RL 的剃刀**（RL's Razor）論題，其主張如下：
 
 > 在新任務的眾多高獎勵解之中，RL 等 on-policy 方法天生偏向那些在 KL 散度上與原始策略保持較近的解。
 
@@ -220,7 +220,7 @@ $$\text{Forgetting} \approx f\left( \mathbb{E}_{x\sim\tau} \left[ \text{KL}(\pi_
 
 ### 15.3.1 預訓練梯度（Pretraining Gradients）
 
-看待正則化的另一種方式是：你可能有一個希望模型保持接近的*資料集*，如同 InstructGPT [3] 所做的那樣，「為了修復在公開 NLP 資料集上的效能退化」。為了實作這一點，他們修改了 RLHF 的訓練目標。以公式 138 為出發點，我們可以將其轉換為一個透過從 RL 策略模型取樣來最佳化的目標函數——補全 $y$ 來自 RLHF 所用之 RL 資料集中的提示 $x$——得到：
+看待正則化的另一種方式是：你可能有一個希望模型保持接近的*資料集*，如同 InstructGPT [[3]](bibliography.html#ref-3) 所做的那樣，「為了修復在公開 NLP 資料集上的效能退化」。為了實作這一點，他們修改了 RLHF 的訓練目標。以公式 138 為出發點，我們可以將其轉換為一個透過從 RL 策略模型取樣來最佳化的目標函數——補全 $y$ 來自 RLHF 所用之 RL 資料集中的提示 $x$——得到：
 
 $$J(\theta) = \mathbb{E}_{(x,y)\sim\mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_\theta(y \mid x) - \lambda r_{\text{reg.}} \right] \tag{148}$$
 
@@ -228,7 +228,7 @@ $$J(\theta) = \mathbb{E}_{(x,y)\sim\mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ 
 
 $$J(\theta) = \mathbb{E}_{(x,y)\sim\mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_\theta(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x\sim\mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right] \tag{149}$$
 
-近期研究提出使用負對數概度項來平衡直接偏好最佳化（Direct Preference Optimization, DPO）的最佳化 [358]。鑑於 DPO 損失的成對（pairwise）性質，同樣的損失修改也可以套用在獎勵模型訓練上，約束模型去預測準確的文字。
+近期研究提出使用負對數概度項來平衡直接偏好最佳化（Direct Preference Optimization, DPO）的最佳化 [[358]](bibliography.html#ref-358)。鑑於 DPO 損失的成對（pairwise）性質，同樣的損失修改也可以套用在獎勵模型訓練上，約束模型去預測準確的文字。
 
 該最佳化是對 DPO 的一項修改。
 
@@ -242,13 +242,13 @@ $$= -\log \sigma \left( \beta \log \frac{P_\theta(c_i^w, y_i^w \mid x_i)}{P_{\te
 
 在 RLHF 技術堆疊的其他部分，對最佳化的控制較不明確。大多數獎勵模型除了標準的對比損失函數（contrastive loss function）之外，沒有任何正則化。直接對齊演算法（Direct Alignment Algorithms）則以不同的方式處理對 KL 散度的正則化——透過 $\beta$ 參數（見直接對齊一章）。
 
-Llama 2 為獎勵模型訓練提出了一種間距損失（margin loss）[49]：
+Llama 2 為獎勵模型訓練提出了一種間距損失（margin loss）[[49]](bibliography.html#ref-49)：
 
 $$\mathcal{L}(\theta) = -\log\left( \sigma\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) - m(y_c, y_r) \right) \right) \tag{152}$$
 
 其中 $m(y_c, y_r)$ 是兩個資料點 $y_c$ 與 $y_r$ 之間的間距，代表兩位標註者評分之差的數值大小。這可以透過讓標註者以數值量表對輸出評分，或使用量化的排序方法（例如李克特量表（Likert scales））來達成。
 
-獎勵間距在直接對齊文獻中被大量使用，例如獎勵加權 DPO（Reward-weighted DPO）；獎勵感知偏好最佳化（Reward-aware Preference Optimization, RPO），它遵循 DPO 損失的形式，將獎勵模型分數整合進更新規則 [30]；以及 REBEL [190]，它在迴歸損失（regression-loss）的形式中帶有獎勵差值加權。
+獎勵間距在直接對齊文獻中被大量使用，例如獎勵加權 DPO（Reward-weighted DPO）；獎勵感知偏好最佳化（Reward-aware Preference Optimization, RPO），它遵循 DPO 損失的形式，將獎勵模型分數整合進更新規則 [[30]](bibliography.html#ref-30)；以及 REBEL [[190]](bibliography.html#ref-190)，它在迴歸損失（regression-loss）的形式中帶有獎勵差值加權。
 
 </script>
 <script src="../assets/marked.min.js"></script>

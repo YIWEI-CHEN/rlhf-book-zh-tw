@@ -33,7 +33,7 @@
 
 獎勵模型（reward model）是現代 RLHF 方法的核心，因為複雜的人類偏好正是在這裡被學習的。它們讓我們的模型得以從難以明確定義的訊號中學習。它們把資料中的複雜特徵壓縮成一種可供下游訓練使用的表示——這是一種再次展現現代深度學習強大能力的魔法。這些模型在後續章節所研究的核心最佳化中扮演代理目標（proxy objectives）的角色。如圖 11 所示，獎勵模型扮演著類似標準 RL 環境的角色，為代理人（agent）提供學習訊號；但與固定不變的環境不同，我們得以從人類偏好中學習它。
 
-獎勵模型在強化學習研究中歷來被廣泛用作環境獎勵的代理 [54]。其現代形式的獎勵模型，最初是作為研究價值對齊問題（value alignment problem）的工具而被提出 [38]。這類模型通常接收某種形式的輸入，並輸出單一純量的獎勵值。這個獎勵可以有多種形式——在傳統 RL 問題中，它試圖逼近該問題的精確環境獎勵；但我們將在 RLHF 中看到，獎勵模型實際上輸出的是某個輸入「品質很高」的機率（亦即在成對偏好關係中被選擇的答案）。RLHF 的獎勵建模實務與逆向強化學習（inverse reinforcement learning）密切相關——後者的問題是在給定行為軌跡的情況下逼近代理人的獎勵函數 [71]——也與深度強化學習的其他領域相關。兩者高層次的問題陳述相同，但實作方式與研究重點完全不同，因此通常被視為完全獨立的研究領域。
+獎勵模型在強化學習研究中歷來被廣泛用作環境獎勵的代理 [[54]](bibliography.html#ref-54)。其現代形式的獎勵模型，最初是作為研究價值對齊問題（value alignment problem）的工具而被提出 [[38]](bibliography.html#ref-38)。這類模型通常接收某種形式的輸入，並輸出單一純量的獎勵值。這個獎勵可以有多種形式——在傳統 RL 問題中，它試圖逼近該問題的精確環境獎勵；但我們將在 RLHF 中看到，獎勵模型實際上輸出的是某個輸入「品質很高」的機率（亦即在成對偏好關係中被選擇的答案）。RLHF 的獎勵建模實務與逆向強化學習（inverse reinforcement learning）密切相關——後者的問題是在給定行為軌跡的情況下逼近代理人的獎勵函數 [[71]](bibliography.html#ref-71)——也與深度強化學習的其他領域相關。兩者高層次的問題陳述相同，但實作方式與研究重點完全不同，因此通常被視為完全獨立的研究領域。
 
 最常見的獎勵模型通常稱為 Bradley-Terry 獎勵模型，也是本章的主要焦點；它預測的是一段文字相對於訓練比較資料中的另一段文字「較受偏好」的機率。本章稍後我們也會將它與結果獎勵模型（Outcome Reward Models, ORMs）、過程獎勵模型（Process Reward Models, PRMs）以及其他類型的獎勵模型進行比較。
 
@@ -41,7 +41,7 @@
 
 ## 5.1 訓練 Bradley-Terry 獎勵模型（Training a Bradley-Terry Reward Model）
 
-獎勵模型的標準實作源自 Bradley-Terry 偏好模型 [72]。訓練 RLHF 標準獎勵模型有兩種常見的表達方式——它們在數學上是等價的。首先，Bradley-Terry 偏好模型定義了在兩個項目 $i$ 與 $j$ 的成對比較中，評審偏好 $i$ 勝過 $j$ 的機率：
+獎勵模型的標準實作源自 Bradley-Terry 偏好模型 [[72]](bibliography.html#ref-72)。訓練 RLHF 標準獎勵模型有兩種常見的表達方式——它們在數學上是等價的。首先，Bradley-Terry 偏好模型定義了在兩個項目 $i$ 與 $j$ 的成對比較中，評審偏好 $i$ 勝過 $j$ 的機率：
 
 $$P(i > j) = \frac{p_i}{p_i + p_j}. \tag{12}$$
 
@@ -85,11 +85,11 @@ $$
 
 在對資料集取平均*之前*先取對數，正是負對數似然損失成為正確目標的關鍵：最大化期望機率 $\mathbb{E}[P]$ 與最大化期望對數機率 $\mathbb{E}[\log P]$ 並不相同。
 
-每筆樣本的損失就是上述期望值內的 log-sigmoid 表達式，如 [3] 與其他工作所示：
+每筆樣本的損失就是上述期望值內的 log-sigmoid 表達式，如 [[3]](bibliography.html#ref-3) 與其他工作所示：
 
 $$\mathcal{L}(\theta) = -\log\left(\sigma\left(r_\theta(y_c \mid x) - r_\theta(y_r \mid x)\right)\right) \tag{17}$$
 
-第二種是數學上等價的形式，以 softplus 函數 $\log(1 + e^{x})$ 表達，如 [23] 與其他工作所示：
+第二種是數學上等價的形式，以 softplus 函數 $\log(1 + e^{x})$ 表達，如 [[23]](bibliography.html#ref-23) 與其他工作所示：
 
 $$\mathcal{L}(\theta) = \log\left(1 + e^{r_\theta(y_r \mid x) - r_\theta(y_c \mid x)}\right) \tag{18}$$
 
@@ -192,15 +192,15 @@ $$\mathcal{L}(\theta) = -\log\left(\sigma\left(r_\theta(y_c \mid x) - r_\theta(y
 
 ### 5.4.2 平衡每個提示的多重比較（Balancing Multiple Comparisons Per Prompt）
 
-InstructGPT 研究了對每個提示使用 $K = 4$ 到 9 個補全進行排名的影響，從每個提示產生 $\binom{K}{2}$ 個成對比較 [3]。由於這些比較高度相關（它們共享相同的提示），天真地將它們洗牌混入資料集會使獎勵模型過度擬合。為了解決這個問題，他們對每個提示的每個比較加權其損失更新——若不重新加權，補全較多的提示只因產生更多配對就會貢獻更多總損失。實務上，來自單一提示的所有 $\binom{K}{2}$ 個比較通常會被放進同一個訓練批次並一起平均，如此每個提示貢獻一次分組更新，而不是分散在許多獨立批次中。這減少了對個別提示的過度擬合，並防止取樣補全較多的提示主導損失。損失函數變為：
+InstructGPT 研究了對每個提示使用 $K = 4$ 到 9 個補全進行排名的影響，從每個提示產生 $\binom{K}{2}$ 個成對比較 [[3]](bibliography.html#ref-3)。由於這些比較高度相關（它們共享相同的提示），天真地將它們洗牌混入資料集會使獎勵模型過度擬合。為了解決這個問題，他們對每個提示的每個比較加權其損失更新——若不重新加權，補全較多的提示只因產生更多配對就會貢獻更多總損失。實務上，來自單一提示的所有 $\binom{K}{2}$ 個比較通常會被放進同一個訓練批次並一起平均，如此每個提示貢獻一次分組更新，而不是分散在許多獨立批次中。這減少了對個別提示的過度擬合，並防止取樣補全較多的提示主導損失。損失函數變為：
 
 $$\mathcal{L}(\theta) = -\frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r) \sim D} \log\left(\sigma\left(r_\theta(y_c \mid x) - r_\theta(y_r \mid x)\right)\right) \tag{20}$$
 
 ### 5.4.3 K-wise 損失函數（K-Wise Loss Function）
 
-還有許多其他公式可以建立適用於 RLHF 的人類偏好模型。其中一個例子是基於 Plackett-Luce 模型 [74] 的 K-wise 損失函數，曾被用於知名的早期 RLHF 模型 Starling 7B 與 34B [73]。
+還有許多其他公式可以建立適用於 RLHF 的人類偏好模型。其中一個例子是基於 Plackett-Luce 模型 [[74]](bibliography.html#ref-74) 的 K-wise 損失函數，曾被用於知名的早期 RLHF 模型 Starling 7B 與 34B [[73]](bibliography.html#ref-73)。
 
-Zhu et al. 2023 [75] 將該設定形式化如下。給定一個提示（或狀態）$s^i$，從 $P(a_0, \cdots, a_{K-1} \mid s^i)$ 取樣 $K$ 個動作 $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$。接著，標註者依偏好對這 $K$ 個動作排序，產生一個排列 $\sigma^i : [K] \mapsto [K]$，其中 $\sigma^i(0)$ 是最受偏好的動作。這產生了對所有 $K$ 個項目完整排名的 Plackett-Luce 機率：
+Zhu et al. 2023 [[75]](bibliography.html#ref-75) 將該設定形式化如下。給定一個提示（或狀態）$s^i$，從 $P(a_0, \cdots, a_{K-1} \mid s^i)$ 取樣 $K$ 個動作 $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$。接著，標註者依偏好對這 $K$ 個動作排序，產生一個排列 $\sigma^i : [K] \mapsto [K]$，其中 $\sigma^i(0)$ 是最受偏好的動作。這產生了對所有 $K$ 個項目完整排名的 Plackett-Luce 機率：
 
 $$P(\sigma^i \mid s^i, a_0^i, a_1^i, \ldots, a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp\left(r_{\theta\star}(s^i, a_{\sigma^i(k)}^i)\right)}{\sum_{j=k}^{K-1} \exp\left(r_{\theta\star}(s^i, a_{\sigma^i(j)}^i)\right)} \tag{21}$$
 
@@ -210,11 +210,11 @@ $$P(\sigma^i \mid s^i, a_0^i, a_1^i, \ldots, a_{K-1}^i) = \prod_{k=0}^{K-1} \fra
 
 語言模型與其他 AI 系統的大部分*偏好微調*（preference tuning）都是以上面討論的 Bradley-Terry 模型完成的。對於重推理的任務，可以使用結果獎勵模型（Outcome Reward Model, ORM）。ORM 的訓練資料以類似標準偏好微調的方式建構。這裡我們有一個問題陳述或提示 $x$，以及兩個補全 $y_1$ 與 $y_2$。此處使用的歸納偏置（inductive bias）是：其中一個補全應為該問題的正確解，另一個為錯誤解，形成 $(y_c, y_{ic})$。
 
-所使用的模型架構與標準獎勵模型非常相似，都是在能輸出單一 logit 的模型上附加一個線性層（就 RM 而言）——而在 ORM 中，後續的訓練目標略有不同 [76]：
+所使用的模型架構與標準獎勵模型非常相似，都是在能輸出單一 logit 的模型上附加一個線性層（就 RM 而言）——而在 ORM 中，後續的訓練目標略有不同 [[76]](bibliography.html#ref-76)：
 
 > [我們]以聯合目標訓練驗證器（verifier），模型除了原本的語言建模目標之外，還要學習將模型補全標記為正確或錯誤。在架構上，這意味著我們的驗證器是語言模型，加上一個小的純量頭，以逐 token 的方式輸出預測。我們將這個純量頭實作為單一偏置參數與單一增益參數，作用於語言模型最終反嵌入層（unembedding layer）輸出的 logits 上。
 
-換句話說，這被實作為一個語言建模頭，能對每個 token 預測兩個類別（1 為正確、0 為錯誤），而不是傳統 RM 那種對整個序列輸出一個 logit 的分類頭。形式上，依循 [77]，這是一個逐 token 的二元交叉熵（binary cross-entropy）損失：
+換句話說，這被實作為一個語言建模頭，能對每個 token 預測兩個類別（1 為正確、0 為錯誤），而不是傳統 RM 那種對整個序列輸出一個 logit 的分類頭。形式上，依循 [[77]](bibliography.html#ref-77)，這是一個逐 token 的二元交叉熵（binary cross-entropy）損失：
 
 $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s, r) \sim \mathcal{D}}\left[r \log p_\theta(s) + (1 - r)\log\left(1 - p_\theta(s)\right)\right] \tag{22}$$
 
@@ -290,9 +290,9 @@ loss = F.binary_cross_entropy_with_logits(
 ![圖](../webapp/assets/figures/fig-p045-1.png)
 *圖 13：推論時，結果獎勵模型會對補全 token 輸出逐 token 的正確性機率。提示 token 不參與評分，而補全機率可以彙總為回應層級的分數，用於驗證、過濾或重新排序。*
 
-這些模型持續被使用，但在開源 RLHF 工具中的支援較少。舉例來說，開創性工作 *Let's Verify Step by Step* [50] 使用了同類型的 ORM，但去掉了損失中的語言建模預測部分。此時最終損失是對每個 token 的交叉熵損失，預測最終答案是否正確。
+這些模型持續被使用，但在開源 RLHF 工具中的支援較少。舉例來說，開創性工作 *Let's Verify Step by Step* [[50]](bibliography.html#ref-50) 使用了同類型的 ORM，但去掉了損失中的語言建模預測部分。此時最終損失是對每個 token 的交叉熵損失，預測最終答案是否正確。
 
-由於缺乏支援，結果獎勵模型（ORM）一詞被以多種方式使用。有些文獻（例如 [77]）繼續沿用 Cobbe et al. 2021 的原始定義；其他人則更廣義地用它來指任何被訓練來預測補全是否正確的驗證器。
+由於缺乏支援，結果獎勵模型（ORM）一詞被以多種方式使用。有些文獻（例如 [[77]](bibliography.html#ref-77)）繼續沿用 Cobbe et al. 2021 的原始定義；其他人則更廣義地用它來指任何被訓練來預測補全是否正確的驗證器。
 
 ## 5.6 過程獎勵模型（Process Reward Models）
 
@@ -301,13 +301,13 @@ loss = F.binary_cross_entropy_with_logits(
 ![圖](../webapp/assets/figures/fig-p046-1.png)
 *圖 14：訓練結果獎勵模型使用來自驗證器或資料集的離線標籤（例如正確補全全為 1）。每個補全 token 以二元交叉熵針對結果標籤進行訓練，逐 token 機率再彙總為最終分數，用於驗證、過濾或重新排序。*
 
-依循 [50]，二元標籤的 PRM 通常以逐步驟的交叉熵損失最佳化：
+依循 [[50]](bibliography.html#ref-50)，二元標籤的 PRM 通常以逐步驟的交叉熵損失最佳化：
 
 $$\mathcal{L}_{\text{PRM}}(\theta) = -\mathbb{E}_{(x, s) \sim \mathcal{D}}\left[\sum_{i=1}^{K} y_{s_i} \log r_\theta(s_i \mid x, s_{<i}) + (1 - y_{s_i})\log\left(1 - r_\theta(s_i \mid x, s_{<i})\right)\right] \tag{23}$$
 
 其中 $s$ 是含有 $K$ 個標註步驟的取樣思維鏈，$y_{s_i} \in \{0, 1\}$ 表示第 $i$ 個步驟是否正確，而 $r_\theta(s_i \mid x, s_{<i})$ 是 PRM 在給定原始提示 $x$ 與所有先前步驟 $s_{<i}$ 的條件下，預測步驟 $s_i$ 有效的機率。
 
-以下是這種逐步驟標籤如何在訓練器中封裝的範例，來自 HuggingFace 的 TRL（Transformer Reinforcement Learning）[47]：
+以下是這種逐步驟標籤如何在訓練器中封裝的範例，來自 HuggingFace 的 TRL（Transformer Reinforcement Learning）[[47]](bibliography.html#ref-47)：
 
 ```python
 # 取得分隔 token 的 ID 並將其加到補全的尾端
@@ -453,7 +453,7 @@ loss = F.cross_entropy(logits[mask], labels[mask])
 
 ## 5.8 生成式獎勵建模（Generative Reward Modeling，又稱 LLM-as-a-judge）
 
-由於偏好資料的成本高昂，一個龐大的研究領域應運而生：使用現有語言模型作為人類偏好的評審，或用於其他評估情境 [78]。其核心想法是以「如何評判」的說明、一個提示以及兩個補全來提示語言模型（就像人類標註者的做法一樣）。以下是一個範例提示，來自此領域的開創性工作之一——聊天評估 MT-Bench [78]：
+由於偏好資料的成本高昂，一個龐大的研究領域應運而生：使用現有語言模型作為人類偏好的評審，或用於其他評估情境 [[78]](bibliography.html#ref-78)。其核心想法是以「如何評判」的說明、一個提示以及兩個補全來提示語言模型（就像人類標註者的做法一樣）。以下是一個範例提示，來自此領域的開創性工作之一——聊天評估 MT-Bench [[78]](bibliography.html#ref-78)：
 
 ```
 [System]
@@ -482,25 +482,25 @@ for a tie.
 [The End of Assistant B's Answer]
 ```
 
-鑑於 LLM-as-a-judge 在評估上的效力——它催生了許多其他評估，例如 AlpacaEval [79]、Arena-Hard [80] 與 WildBench [81]——許多人開始使用 LLM-as-a-judge 而非獎勵模型來建立與使用偏好資料。
+鑑於 LLM-as-a-judge 在評估上的效力——它催生了許多其他評估，例如 AlpacaEval [[79]](bibliography.html#ref-79)、Arena-Hard [[80]](bibliography.html#ref-80) 與 WildBench [[81]](bibliography.html#ref-81)——許多人開始使用 LLM-as-a-judge 而非獎勵模型來建立與使用偏好資料。
 
-一整個研究領域圍繞著如何使用所謂的「生成式獎勵模型」（Generative Reward Models）而興起 [82] [83] [84]（包括*專門*被訓練成有效評審的模型 [85]），但在 RM 評估上，它們往往落後於現有的獎勵模型，這顯示獎勵建模對當前的 RLHF 而言仍是一項重要技術。
+一整個研究領域圍繞著如何使用所謂的「生成式獎勵模型」（Generative Reward Models）而興起 [[82]](bibliography.html#ref-82) [[83]](bibliography.html#ref-83) [[84]](bibliography.html#ref-84)（包括*專門*被訓練成有效評審的模型 [[85]](bibliography.html#ref-85)），但在 RM 評估上，它們往往落後於現有的獎勵模型，這顯示獎勵建模對當前的 RLHF 而言仍是一項重要技術。
 
 提升 LLM-as-a-judge 工作流程穩健性的一個常見技巧，是使用取樣溫度 0 來降低評分的變異。
 
 ## 5.9 延伸閱讀（Further Reading）
 
-獎勵建模的學術文獻在 2024 年確立。早期進展大多集中在建立基準測試（benchmarks）與辨識行為模式。第一個 RM 基準測試 RewardBench 為測試獎勵模型提供了共通的基礎設施 [86]。自那以後，RM 評估已擴展到與一般後訓練模型可用的評估類型相似的範疇，其中一些評估測試在已知真實答案的領域上的預測準確度 [86]，另一些則更接近以 LLM-as-a-judge 進行的「感覺」（vibes）式評估或與其他基準測試的相關性 [87]。
+獎勵建模的學術文獻在 2024 年確立。早期進展大多集中在建立基準測試（benchmarks）與辨識行為模式。第一個 RM 基準測試 RewardBench 為測試獎勵模型提供了共通的基礎設施 [[86]](bibliography.html#ref-86)。自那以後，RM 評估已擴展到與一般後訓練模型可用的評估類型相似的範疇，其中一些評估測試在已知真實答案的領域上的預測準確度 [[86]](bibliography.html#ref-86)，另一些則更接近以 LLM-as-a-judge 進行的「感覺」（vibes）式評估或與其他基準測試的相關性 [[87]](bibliography.html#ref-87)。
 
 新基準測試的例子包括：
 
-- **純文字（一般聊天／偏好）：** RMB [88]、RewardBench2 [89]、Preference Proxy Evaluations [90]，或 RM-Bench [91]。
-- **專門的純文字（數學等）：** 多語言獎勵基準（M-RewardBench）[92]、針對檢索增強生成（retrieval augmented generation, RAG）的 RAG-RewardBench [93]、針對錯字的 ReWordBench [94]、RewardMATH [95]，或 AceMath-RewardBench [96]。
-- **過程 RM：** PRM Bench [97] 或 ProcessBench [98]，以及視覺基準 VisualProcessBench [99] 或 ViLBench [100]。
-- **代理型 RM：** Agent-RewardBench [101] 或 CUARewardBench [102]。
-- **多模態：** MJ-Bench [103]、Multimodal RewardBench [104]、VL RewardBench [105]，或 VLRMBench [106]。
+- **純文字（一般聊天／偏好）：** RMB [[88]](bibliography.html#ref-88)、RewardBench2 [[89]](bibliography.html#ref-89)、Preference Proxy Evaluations [[90]](bibliography.html#ref-90)，或 RM-Bench [[91]](bibliography.html#ref-91)。
+- **專門的純文字（數學等）：** 多語言獎勵基準（M-RewardBench）[[92]](bibliography.html#ref-92)、針對檢索增強生成（retrieval augmented generation, RAG）的 RAG-RewardBench [[93]](bibliography.html#ref-93)、針對錯字的 ReWordBench [[94]](bibliography.html#ref-94)、RewardMATH [[95]](bibliography.html#ref-95)，或 AceMath-RewardBench [[96]](bibliography.html#ref-96)。
+- **過程 RM：** PRM Bench [[97]](bibliography.html#ref-97) 或 ProcessBench [[98]](bibliography.html#ref-98)，以及視覺基準 VisualProcessBench [[99]](bibliography.html#ref-99) 或 ViLBench [[100]](bibliography.html#ref-100)。
+- **代理型 RM：** Agent-RewardBench [[101]](bibliography.html#ref-101) 或 CUARewardBench [[102]](bibliography.html#ref-102)。
+- **多模態：** MJ-Bench [[103]](bibliography.html#ref-103)、Multimodal RewardBench [[104]](bibliography.html#ref-104)、VL RewardBench [[105]](bibliography.html#ref-105)，或 VLRMBench [[106]](bibliography.html#ref-106)。
 
-要了解*訓練*獎勵模型的進展，可以參考新的獎勵模型訓練方法，包括面向條件化模型（aspect-conditioned models）[107]、高品質人類資料集 [108] [109]、擴展性實驗 [30]、大規模實驗 [49]，或資料去偏（debiasing data）[110]。
+要了解*訓練*獎勵模型的進展，可以參考新的獎勵模型訓練方法，包括面向條件化模型（aspect-conditioned models）[[107]](bibliography.html#ref-107)、高品質人類資料集 [[108]](bibliography.html#ref-108) [[109]](bibliography.html#ref-109)、擴展性實驗 [[30]](bibliography.html#ref-30)、大規模實驗 [[49]](bibliography.html#ref-49)，或資料去偏（debiasing data）[[110]](bibliography.html#ref-110)。
 
 ## 5.10 建議實驗（Suggested Experiments）
 

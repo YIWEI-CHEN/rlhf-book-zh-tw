@@ -33,13 +33,13 @@
 
 直接對齊演算法（Direct Alignment Algorithms, DAAs）讓我們得以在完全不訓練中介獎勵模型（reward model）、也不使用強化學習最佳化器的情況下，更新模型以求解相同的 RLHF 目標。DAAs 求解的是我們一直在研究的同一個偏好學習問題（甚至使用一模一樣的資料！），目的是讓語言模型更對齊、更聰明、更容易使用。由於不需要獎勵模型與線上最佳化，DAAs 的實作遠為簡單，能降低訓練期間的運算開銷，也讓實驗變得更容易。本章詳述推導這些演算法所需的複雜數學，並展示這些有時頗為繁瑣的推導，最終如何化為簡潔的實作。
 
-最著名的 DAA——同時也是催化了整個語言模型對齊學術運動的方法——是直接偏好最佳化（Direct Preference Optimization, DPO）[25]。就其核心而言，DPO 使用梯度上升（gradient ascent）來求解同一個帶約束的 RLHF 目標（見第 3 章）：
+最著名的 DAA——同時也是催化了整個語言模型對齊學術運動的方法——是直接偏好最佳化（Direct Preference Optimization, DPO）[[25]](bibliography.html#ref-25)。就其核心而言，DPO 使用梯度上升（gradient ascent）來求解同一個帶約束的 RLHF 目標（見第 3 章）：
 
 $$
 \max_{\pi} \mathbb{E}_{x \sim \mathcal{D}} \mathbb{E}_{y \sim \pi(y|x)} \left[ r_\theta(x, y) \right] - \beta \mathcal{D}_{\mathrm{KL}} \left( \pi(y|x) \| \pi_{\mathrm{ref}}(y|x) \right) \tag{79}
 $$
 
-自 2023 年 5 月發表以來——經過一段短暫的延遲，社群才摸索出使用 DPO 的正確資料與超參數（hyperparameters）（具體來說，是出乎意料低的學習率）——許多熱門模型都使用了 DPO 或其變體，從 2023 年 10 月率先採用的 Zephyr-$\beta$ [26]、Llama 3 Instruct [29]、Tülu 2 [27] 與 3 [6]、Nemotron 4 340B [30]，以及其他模型。嚴格說來，序列似然校準（Sequence Likelihood Calibration, SLiC-HF）才是最早發表的現代直接對齊演算法 [189]，但由於多種因素的綜合影響，它並未流行起來（要解開研究方法被採用與否的來龍去脈，向來是件棘手的事）。
+自 2023 年 5 月發表以來——經過一段短暫的延遲，社群才摸索出使用 DPO 的正確資料與超參數（hyperparameters）（具體來說，是出乎意料低的學習率）——許多熱門模型都使用了 DPO 或其變體，從 2023 年 10 月率先採用的 Zephyr-$\beta$ [[26]](bibliography.html#ref-26)、Llama 3 Instruct [[29]](bibliography.html#ref-29)、Tülu 2 [[27]](bibliography.html#ref-27) 與 3 [[6]](bibliography.html#ref-6)、Nemotron 4 340B [[30]](bibliography.html#ref-30)，以及其他模型。嚴格說來，序列似然校準（Sequence Likelihood Calibration, SLiC-HF）才是最早發表的現代直接對齊演算法 [[189]](bibliography.html#ref-189)，但由於多種因素的綜合影響，它並未流行起來（要解開研究方法被採用與否的來龍去脈，向來是件棘手的事）。
 
 DPO 與 DAAs 最具影響力之處，在於降低了實驗語言模型後訓練（post-training）的入門門檻——它使用較少的運算資源、從零開始實作更容易，而且無論是玩具範例還是生產環境的案例都更容易跑起來。
 
@@ -249,7 +249,7 @@ $$
 \end{aligned} \tag{106}
 $$
 
-這就是 DPO 的損失函數，即式 80 所示的形式。DPO 論文還有一個針對 Plackett-Luce 模型下目標的額外推導，但在實務中使用得少得多 [25]。
+這就是 DPO 的損失函數，即式 80 所示的形式。DPO 論文還有一個針對 Plackett-Luce 模型下目標的額外推導，但在實務中使用得少得多 [[25]](bibliography.html#ref-25)。
 
 #### 8.1.2.3 推導 BT DPO 梯度（Deriving the BT DPO Gradient）
 
@@ -277,27 +277,27 @@ $$
 
 為了解決 DPO 的弱點，人們提出了許多 DPO 演算法的變體。舉例來說，在沒有 rollout（推演）讓獎勵模型為生成結果評分的情況下，DPO 對每一對偏好資料一視同仁。而實際上，如第 11 章「偏好資料」所示，有許多方式可以擷取到比二元標籤更豐富的偏好資料。已有多種演算法被提出，用來重新平衡最佳化過程，使其不再對每一對資料等量齊觀。
 
-- **基於相對獎勵迴歸的 RL（REgression to RElative REward Based RL, REBEL）** 加入來自獎勵模型的訊號，以被選與被拒回應之間的差距（margin）形式呈現，而非僅依靠成對偏好資料，從而更準確地求解 RLHF 問題 [190]。
-- **保守 DPO（Conservative DPO, cDPO）與恆等偏好最佳化（Identity Preference Optimization, IPO）** 透過假設偏好資料中存在雜訊來處理過度擬合。cDPO 假設有 N% 的資料標記錯誤 [25]；IPO 則改變最佳化方式，將偏好機率軟化，而非直接依標籤進行最佳化 [191]。實務上，IPO 將偏好機率改為一個非線性函數，脫離 Bradley-Terry 假設，使用 $\Psi(q) = \log\left( \frac{q}{1-q} \right)$。
-- **帶偏移量的 DPO（DPO with an offset, ODPO）**「要求受偏好回應與不受偏好回應之間的似然差必須大於一個偏移值」[192]——不再對每一對資料等量齊觀，但這可能以更困難的標記環境為代價。
+- **基於相對獎勵迴歸的 RL（REgression to RElative REward Based RL, REBEL）** 加入來自獎勵模型的訊號，以被選與被拒回應之間的差距（margin）形式呈現，而非僅依靠成對偏好資料，從而更準確地求解 RLHF 問題 [[190]](bibliography.html#ref-190)。
+- **保守 DPO（Conservative DPO, cDPO）與恆等偏好最佳化（Identity Preference Optimization, IPO）** 透過假設偏好資料中存在雜訊來處理過度擬合。cDPO 假設有 N% 的資料標記錯誤 [[25]](bibliography.html#ref-25)；IPO 則改變最佳化方式，將偏好機率軟化，而非直接依標籤進行最佳化 [[191]](bibliography.html#ref-191)。實務上，IPO 將偏好機率改為一個非線性函數，脫離 Bradley-Terry 假設，使用 $\Psi(q) = \log\left( \frac{q}{1-q} \right)$。
+- **帶偏移量的 DPO（DPO with an offset, ODPO）**「要求受偏好回應與不受偏好回應之間的似然差必須大於一個偏移值」[[192]](bibliography.html#ref-192)——不再對每一對資料等量齊觀，但這可能以更困難的標記環境為代價。
 
 有些 DPO 變體試圖透過對損失做小幅修改來改善學習訊號，或透過減少記憶體用量讓應用更有效率。
 
-- **勝算比策略最佳化（Odds Ratio Policy Optimization, ORPO）** 直接以「朝被選回應拉動」的方式更新策略模型，類似指令微調（instruction fine-tuning）損失，並對被選回應施加一個小的懲罰項 [193]。這種損失函數的改變移除了對參考模型的需求，簡化了整體設定。看待 ORPO 最好的方式是：它是受 DPO 啟發的方法，而非 DPO 的衍生物。
-- **簡單偏好最佳化（Simple Preference Optimization, SimPO）** 對 DPO 最佳化做了一個小改動：將對數機率取平均而非加總（或加入長度正規化），以提升效能 [194]。
+- **勝算比策略最佳化（Odds Ratio Policy Optimization, ORPO）** 直接以「朝被選回應拉動」的方式更新策略模型，類似指令微調（instruction fine-tuning）損失，並對被選回應施加一個小的懲罰項 [[193]](bibliography.html#ref-193)。這種損失函數的改變移除了對參考模型的需求，簡化了整體設定。看待 ORPO 最好的方式是：它是受 DPO 啟發的方法，而非 DPO 的衍生物。
+- **簡單偏好最佳化（Simple Preference Optimization, SimPO）** 對 DPO 最佳化做了一個小改動：將對數機率取平均而非加總（或加入長度正規化），以提升效能 [[194]](bibliography.html#ref-194)。
 
-DPO 一個*顯而易見*的核心問題是：其最佳化只朝著「擴大被選回應與被拒回應機率之間的差距」推進。數值上，模型會同時降低被選與被拒回應的機率，但*被拒回應被降低的幅度更大*，如圖 27 所示。直覺上，我們並不清楚這會如何泛化，但已有研究提出這會提高「未處理行為」的機率——也就是那些語言模型可能生成、但不在後訓練資料集分布內的 token [195] [196]。一些簡單的方法——例如調整最佳化過程的 Cal-DPO [197]，以及修改獎勵形狀的 AlphaPO [198]——能緩解這種**偏好位移（preference displacement）**。實務上，這個現象的確切影響尚不為人所知，但它指向一個潛在原因，說明為什麼線上（online）方法可以勝過原始版本的 DPO。
+DPO 一個*顯而易見*的核心問題是：其最佳化只朝著「擴大被選回應與被拒回應機率之間的差距」推進。數值上，模型會同時降低被選與被拒回應的機率，但*被拒回應被降低的幅度更大*，如圖 27 所示。直覺上，我們並不清楚這會如何泛化，但已有研究提出這會提高「未處理行為」的機率——也就是那些語言模型可能生成、但不在後訓練資料集分布內的 token [[195]](bibliography.html#ref-195) [[196]](bibliography.html#ref-196)。一些簡單的方法——例如調整最佳化過程的 Cal-DPO [[197]](bibliography.html#ref-197)，以及修改獎勵形狀的 AlphaPO [[198]](bibliography.html#ref-198)——能緩解這種**偏好位移（preference displacement）**。實務上，這個現象的確切影響尚不為人所知，但它指向一個潛在原因，說明為什麼線上（online）方法可以勝過原始版本的 DPO。
 
 ![圖](../webapp/assets/figures/fig-p113-1.png)
 *圖 27：DPO 中偏好位移的示意圖。*
 
-另一個被提出、用以解釋 DPO 類方法效能天花板低於線上（基於 RL 的）RLHF 方法的主要原因是：其訓練訊號來自先前模型或其他模型產生的補全。DPO 的線上變體透過在訓練時生成新的補全並納入偏好訊號，緩解了這些限制。**線上 DPO（Online DPO）**[199] 從當前模型抽樣生成結果，而**判別器引導的 DPO（Discriminator-Guided DPO, D2PO）**[200] 則使用獎勵模型重新標記，即時建立新的偏好資料——此外還存在許多其他變體。
+另一個被提出、用以解釋 DPO 類方法效能天花板低於線上（基於 RL 的）RLHF 方法的主要原因是：其訓練訊號來自先前模型或其他模型產生的補全。DPO 的線上變體透過在訓練時生成新的補全並納入偏好訊號，緩解了這些限制。**線上 DPO（Online DPO）**[[199]](bibliography.html#ref-199) 從當前模型抽樣生成結果，而**判別器引導的 DPO（Discriminator-Guided DPO, D2PO）**[[200]](bibliography.html#ref-200) 則使用獎勵模型重新標記，即時建立新的偏好資料——此外還存在許多其他變體。
 
-其他 DAA 變體還有一長串，例如直接納許最佳化（Direct Nash Optimization, DNO）[201] 或二元分類器最佳化（Binary Classifier Optimization, BCO）[202]，但演算法的選擇遠不如初始模型與所用資料重要 [6] [203] [204]。
+其他 DAA 變體還有一長串，例如直接納許最佳化（Direct Nash Optimization, DNO）[[201]](bibliography.html#ref-201) 或二元分類器最佳化（Binary Classifier Optimization, BCO）[[202]](bibliography.html#ref-202)，但演算法的選擇遠不如初始模型與所用資料重要 [[6]](bibliography.html#ref-6) [[203]](bibliography.html#ref-203) [[204]](bibliography.html#ref-204)。
 
 ## 8.3 實作細節（Implementation Details）
 
-DPO 這類 DAA 的實作方式與策略梯度最佳化器截然不同。取自原始實作的 DPO 損失，大致可以總結如下 [25]：
+DPO 這類 DAA 的實作方式與策略梯度最佳化器截然不同。取自原始實作的 DPO 損失，大致可以總結如下 [[25]](bibliography.html#ref-25)：
 
 ```python
 # 策略模型與凍結參考模型的對數機率差距
@@ -325,11 +325,11 @@ rejected_rewards = beta * (policy_rejected_logps - reference_rejected_logps).det
 
 ## 8.4 使用合成偏好資料的 DAAs（DAAs with Synthetic Preference Data）
 
-如今，多數用於以 DAAs 進行偏好微調的熱門資料集，都是合成偏好（synthetic preferences）——由一個前沿模型（frontier model）評判其他模型的輸出誰勝誰負。著名的例子包括 UltraFeedback（此類別的第一個）[28]、Tülu 3（以擴充版的 UltraFeedback 方法論建立）[6]、SmolLM 3 的資料 [205]，或隨 Olmo 3 發布的 Dolci Pref 資料集 [18]。
+如今，多數用於以 DAAs 進行偏好微調的熱門資料集，都是合成偏好（synthetic preferences）——由一個前沿模型（frontier model）評判其他模型的輸出誰勝誰負。著名的例子包括 UltraFeedback（此類別的第一個）[[28]](bibliography.html#ref-28)、Tülu 3（以擴充版的 UltraFeedback 方法論建立）[[6]](bibliography.html#ref-6)、SmolLM 3 的資料 [[205]](bibliography.html#ref-205)，或隨 Olmo 3 發布的 Dolci Pref 資料集 [[18]](bibliography.html#ref-18)。
 
-建構這些資料集的最佳實務仍在演進中。Tülu 3 及其 2024 年 11 月發表前後的相關資料集證明了：合成的成對偏好資料需要在某種意義上是「on-policy（同策略）」的——即部分補全是由你正在微調的那個模型生成的（同時混在一個更大的模型池中）。資料的這種 on-policy 特性確保了 DAA 會在模型實際生成的正確 token 空間內進行最佳化——因為這些損失函數是對比式（contrastive）的，不如指令微調那樣直接。後來，隨著 2025 年 Olmo 3 與 SmolLM 3 的發布，其他研究支持了一種不同的理論，稱為 Delta Learning。該理論主張：被選補全與被拒補全之間的*差異*，比確切使用哪些模型來產生補全對學習更重要 [206]。舉例來說，在上述兩個被引用的模型中，被選回應來自 Qwen 3 32B，被拒回應來自 Qwen 3 0.6B——兩組作者是同時且獨立地發展出這種配對方式的。
+建構這些資料集的最佳實務仍在演進中。Tülu 3 及其 2024 年 11 月發表前後的相關資料集證明了：合成的成對偏好資料需要在某種意義上是「on-policy（同策略）」的——即部分補全是由你正在微調的那個模型生成的（同時混在一個更大的模型池中）。資料的這種 on-policy 特性確保了 DAA 會在模型實際生成的正確 token 空間內進行最佳化——因為這些損失函數是對比式（contrastive）的，不如指令微調那樣直接。後來，隨著 2025 年 Olmo 3 與 SmolLM 3 的發布，其他研究支持了一種不同的理論，稱為 Delta Learning。該理論主張：被選補全與被拒補全之間的*差異*，比確切使用哪些模型來產生補全對學習更重要 [[206]](bibliography.html#ref-206)。舉例來說，在上述兩個被引用的模型中，被選回應來自 Qwen 3 32B，被拒回應來自 Qwen 3 0.6B——兩組作者是同時且獨立地發展出這種配對方式的。
 
-整體而言，考量到實作的簡單性，以及相對於基於強化學習的偏好微調方法的強勁表現，以 DAAs 在合成偏好資料上訓練模型，是多數實務工作者應該起步的地方。使用大量合成偏好資料時還存在其他次要問題，例如評判補全的模型自身的偏誤。鑑於 GPT-4 等前沿模型已知具有長度偏誤（length bias）[79]，並偏好與自身相符的輸出 [207]（詳見第 12 章），資料集中「被選」部分的文字略微更有可能來自 OpenAI 的模型，或另一個風格與其相似的強大模型。
+整體而言，考量到實作的簡單性，以及相對於基於強化學習的偏好微調方法的強勁表現，以 DAAs 在合成偏好資料上訓練模型，是多數實務工作者應該起步的地方。使用大量合成偏好資料時還存在其他次要問題，例如評判補全的模型自身的偏誤。鑑於 GPT-4 等前沿模型已知具有長度偏誤（length bias）[[79]](bibliography.html#ref-79)，並偏好與自身相符的輸出 [[207]](bibliography.html#ref-207)（詳見第 12 章），資料集中「被選」部分的文字略微更有可能來自 OpenAI 的模型，或另一個風格與其相似的強大模型。
 
 在本節的最後，我們將說明這些方法如何改變被訓練模型的生成結果的直覺。從高層次來看，多數 DAAs 的最佳化目標是擴大「被選」與「被拒」補全機率之間的差距（某些較不流行的演算法會刻意稍微改變這些動態，但核心不變）。如本章先前所討論的（見圖 27），這通常意味著兩者的機率都會下降，但被拒回應下降的幅度更大。序列中的每個 token 會依據其對整體偏好差距的貢獻程度，收到不同的梯度（包括大小與方向），使最佳化器能辨識出哪些 token 對結果最重要。
 
@@ -337,7 +337,7 @@ rejected_rewards = beta * (policy_rejected_logps - reference_rejected_logps).det
 
 概括來說，這場爭論可以歸結為一個問題：要用 RLHF 對齊語言模型，我們是否需要強化學習的內部機制——價值函數（value functions）、策略梯度等等？和多數以這種方式表述的問題一樣，這樣問過於簡化。當然，兩種方法都已相當成熟，但闡明其根本差異與效能版圖（performance manifolds）所在，仍然很重要。
 
-多份報告的結論是：基於策略梯度的方法與 RL 方法優於 DPO 及其變體。這些論證有不同形式：有的是在受控資料下以不同演算法訓練模型 [125] [165]，有的是研究 RL 最佳化迴圈中 on-policy 資料的角色 [208]。在所有這些案例中，DPO 演算法都稍微落後一步。
+多份報告的結論是：基於策略梯度的方法與 RL 方法優於 DPO 及其變體。這些論證有不同形式：有的是在受控資料下以不同演算法訓練模型 [[125]](bibliography.html#ref-125) [[165]](bibliography.html#ref-165)，有的是研究 RL 最佳化迴圈中 on-policy 資料的角色 [[208]](bibliography.html#ref-208)。在所有這些案例中，DPO 演算法都稍微落後一步。
 
 即便存在這樣的效能差距，DAAs 因其簡單性仍被領先的模型廣泛使用。DAAs 提供了一個受控的環境，能快速迭代訓練資料與其他配置；而鑑於資料往往遠比演算法重要，使用 DPO 可以是很好的選擇。
 

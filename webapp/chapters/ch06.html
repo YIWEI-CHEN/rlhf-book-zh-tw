@@ -39,7 +39,7 @@
 
 從機器學習的層面來看，本節是整個 RLHF 流程中複雜度最高的主題。不過，正如大多數現代 AI 模型一樣，決定其成敗的最大因素仍然是作為流程輸入的資料。
 
-當 RLHF 隨著 ChatGPT 進入大眾視野時，外界大致已知他們使用的是 PPO 的某種變體，許多早期的嘗試也都以此為基礎。隨著時間推移，多個研究專案展示了 REINFORCE 式演算法的潛力 [111] [109]，其賣點是比 PPO 更簡單：不需要獨立的價值模型（節省記憶體，因此減少所需的 GPU 數量），並且採用更簡單的優勢估計（不需要廣義優勢估計（Generalized Advantage Estimation, GAE）——GAE 是一種用來計算優勢的方法，用於降低策略梯度演算法的變異數）。後來又出現了更多演算法，包括在推理任務上特別流行的群組相對策略最佳化（GRPO），但一般而言，這些演算法多半都可以針對特定任務進行調校。在本章中，我們會介紹核心的策略梯度框架，以及上述三種演算法——因為它們在建立 RLHF 經典文獻體系中扮演了核心角色。
+當 RLHF 隨著 ChatGPT 進入大眾視野時，外界大致已知他們使用的是 PPO 的某種變體，許多早期的嘗試也都以此為基礎。隨著時間推移，多個研究專案展示了 REINFORCE 式演算法的潛力 [[111]](bibliography.html#ref-111) [[109]](bibliography.html#ref-109)，其賣點是比 PPO 更簡單：不需要獨立的價值模型（節省記憶體，因此減少所需的 GPU 數量），並且採用更簡單的優勢估計（不需要廣義優勢估計（Generalized Advantage Estimation, GAE）——GAE 是一種用來計算優勢的方法，用於降低策略梯度演算法的變異數）。後來又出現了更多演算法，包括在推理任務上特別流行的群組相對策略最佳化（GRPO），但一般而言，這些演算法多半都可以針對特定任務進行調校。在本章中，我們會介紹核心的策略梯度框架，以及上述三種演算法——因為它們在建立 RLHF 經典文獻體系中扮演了核心角色。
 
 最簡單的情況下，RLHF 的 RL 階段需要兩個模型：一個策略（正在被訓練的模型），以及一個為其輸出評分的獎勵模型（如前一章所述）。RL 之前的策略副本會作為參考模型（reference model），用來計算 KL 懲罰（這個模型是凍結的，也就是說它不會被自動微分引擎的梯度更新）。本章涵蓋的最複雜演算法 PPO 還會加入第四個模型——一個學習而來的價值函數（value function），用來估計動作中每個 token 的好壞，它同樣是一個在訓練過程中被更新的大型語言模型。本章的演算法之間的差異，主要在於它們如何估計一個稱為「優勢（advantage）」的量——衡量模型當前動作（補全）相對於平均水準有多好——以及它們如何約束策略更新，讓最佳化過程在數值上保持穩定。這個 RLHF 流程（不含價值模型）的視覺化概覽如圖 16 所示。
 
@@ -199,7 +199,7 @@ $$
 g = \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\left[\sum_{t=0}^{\infty} \Psi_t \nabla_\theta \log \pi_\theta(a_t|s_t)\right] \tag{41}
 $$
 
-其中 $\Psi_t$ 可以是以下幾種（其中的獎勵也常會用 $\gamma$ 做折扣），這個分類法取自 Schulman et al. 2015 [112]：
+其中 $\Psi_t$ 可以是以下幾種（其中的獎勵也常會用 $\gamma$ 做折扣），這個分類法取自 Schulman et al. 2015 [[112]](bibliography.html#ref-112)：
 
 1. $R(\tau) = \sum_{t=0}^{\infty} r_t$：軌跡的總獎勵。
 2. $\sum_{t'=t}^{\infty} r_{t'}$：動作 $a_t$ 之後的獎勵，也就是從時間 $t$ 起算的回報 $G_t$。
@@ -236,7 +236,7 @@ $$
 
 ### 6.2.3 REINFORCE
 
-REINFORCE 這個演算法名稱很可能是一個反向縮寫（backronym），但它所代表的演算法組成元素，與現代強化學習演算法高度相關。它定義於開創性論文 *Simple statistical gradient-following algorithms for connectionist reinforcement learning* [113]：
+REINFORCE 這個演算法名稱很可能是一個反向縮寫（backronym），但它所代表的演算法組成元素，與現代強化學習演算法高度相關。它定義於開創性論文 *Simple statistical gradient-following algorithms for connectionist reinforcement learning* [[113]](bibliography.html#ref-113)：
 
 > 這個名稱是「REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility」（獎勵增量 = 非負因子 × 偏移強化 × 特徵資格）的縮寫。
 
@@ -271,7 +271,7 @@ REINFORCE 是基礎策略梯度的一種特定實作，使用蒙地卡羅估計�
 
 ### 6.2.4 REINFORCE 留一法（REINFORCE Leave One Out, RLOO）
 
-REINFORCE Leave One Out 相對於標準 REINFORCE 的核心實作差異在於：它取批次中「其他」樣本的平均獎勵來計算基準線——而不是對批次內所有獎勵取平均 [114], [111], [115]。由於把當前樣本自身的獎勵排除在它的基準線之外，RLOO 的基準線與正在被評估的動作互相獨立，這讓梯度估計式保持完全無偏（unbiased）。
+REINFORCE Leave One Out 相對於標準 REINFORCE 的核心實作差異在於：它取批次中「其他」樣本的平均獎勵來計算基準線——而不是對批次內所有獎勵取平均 [[114]](bibliography.html#ref-114), [[111]](bibliography.html#ref-111), [[115]](bibliography.html#ref-115)。由於把當前樣本自身的獎勵排除在它的基準線之外，RLOO 的基準線與正在被評估的動作互相獨立，這讓梯度估計式保持完全無偏（unbiased）。
 
 關鍵在於，這只有在每個狀態（提示詞）生成多條軌跡（補全）時才行得通——而這在多個以 RL 微調語言模型的領域中已是常見做法。
 
@@ -302,7 +302,7 @@ RLOO 以及其他不使用價值網路的演算法——價值網路是一個額
 
 ### 6.2.5 近端策略最佳化（Proximal Policy Optimization, PPO）
 
-近端策略最佳化（PPO）[116] 是深度強化學習諸多成功案例背後的奠基演算法之一（例如稱霸 Dota 2 的 OpenAI Five [117]，以及大量研究工作）。PPO 相對於優勢與策略機率所最大化的目標如下：
+近端策略最佳化（PPO）[[116]](bibliography.html#ref-116) 是深度強化學習諸多成功案例背後的奠基演算法之一（例如稱霸 Dota 2 的 OpenAI Five [[117]](bibliography.html#ref-117)，以及大量研究工作）。PPO 相對於優勢與策略機率所最大化的目標如下：
 
 $$
 J(\theta) = \min\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_\text{old}}(a|s)} A, \; \text{clip}\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_\text{old}}(a|s)}, 1-\varepsilon, 1+\varepsilon\right) A\right). \tag{51}
@@ -334,7 +334,7 @@ $$
 J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_\text{old}}(a_t|s_t)} A_t, \; \text{clip}\left(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_\text{old}}(a_t|s_t)}, 1-\varepsilon, 1+\varepsilon\right) A_t\right). \tag{54}
 $$
 
-這是 PPO 的逐 token 版本，它同樣適用於其他策略梯度方法，本章的實作章節會進一步探討。這裡以動作的 token 數做平均的項 $\frac{1}{|a|}$ 源於常見的實作慣例，但並不在損失的正式推導之中（見 [118]）。
+這是 PPO 的逐 token 版本，它同樣適用於其他策略梯度方法，本章的實作章節會進一步探討。這裡以動作的 token 數做平均的項 $\frac{1}{|a|}$ 源於常見的實作慣例，但並不在損失的正式推導之中（見 [[118]](bibliography.html#ref-118)）。
 
 ![圖](../webapp/assets/figures/fig-p063-1.png)
 *圖 19：PPO 框架。學習而來的價值函數使廣義優勢估計（GAE）得以計算逐 token 優勢，並與裁剪替代目標一起使用。*
@@ -355,7 +355,7 @@ $$
 
 在信賴區域（trust region）內，PPO 的運作方式與其他策略梯度演算法完全相同。這是刻意設計的！信賴區域這個概念用來限制 PPO 及其同類演算法的最大步長，以維持更新的穩定性。PPO 演算法的核心——clip 與 min/max 函數——定義了這個區域。在區域之外，目標函數變為平坦。
 
-「信賴區域」的概念來自數值最佳化文獻 [119]，但在深度強化學習中因信賴區域策略最佳化（Trust Region Policy Optimization, TRPO）演算法而普及，TRPO 被公認為 PPO 的前身 [120]。信賴區域是完整策略梯度步得以施行的區域，因為在這裡更新不會被 PPO 目標的 max/min 運算「裁剪」掉。
+「信賴區域」的概念來自數值最佳化文獻 [[119]](bibliography.html#ref-119)，但在深度強化學習中因信賴區域策略最佳化（Trust Region Policy Optimization, TRPO）演算法而普及，TRPO 被公認為 PPO 的前身 [[120]](bibliography.html#ref-120)。信賴區域是完整策略梯度步得以施行的區域，因為在這裡更新不會被 PPO 目標的 max/min 運算「裁剪」掉。
 
 策略比值與優勢合起來可以出現在幾種不同的組態中，圖 20 依優勢 $A_t$ 的正負號，以及策略比值 $\rho(\theta)$ 落入三個區域中的哪一個來一一列舉。每個區域的結果由兩個事實決定：優勢的正負號決定我們想讓該動作變得更可能還是更不可能，而 min 運算則在未裁剪項 $\rho(\theta)A_t$ 與其裁剪版本之間做選擇。
 
@@ -507,7 +507,7 @@ advantages = (targets - v_pred).detach()
 
 ### 6.2.8 群組相對策略最佳化（Group Relative Policy Optimization, GRPO）
 
-群組相對策略最佳化（GRPO）在 DeepSeekMath [121] 中被提出，並在 DeepSeek 的其他工作中使用，例如 DeepSeek-V3 [16] 與 DeepSeek-R1 [15]。GRPO 可以視為受 PPO 啟發的演算法，具有非常相似的替代損失，但它避免了學習一個價值函數——後者需要原始策略語言模型的另一個副本（或另一個 checkpoint 作為初始化）。這帶來兩個被主張的好處：
+群組相對策略最佳化（GRPO）在 DeepSeekMath [[121]](bibliography.html#ref-121) 中被提出，並在 DeepSeek 的其他工作中使用，例如 DeepSeek-V3 [[16]](bibliography.html#ref-16) 與 DeepSeek-R1 [[15]](bibliography.html#ref-15)。GRPO 可以視為受 PPO 啟發的演算法，具有非常相似的替代損失，但它避免了學習一個價值函數——後者需要原始策略語言模型的另一個副本（或另一個 checkpoint 作為初始化）。這帶來兩個被主張的好處：
 
 1. 避開了在語言模型骨幹上學習價值函數的難題——這方面的研究至今尚未建立最佳實務。
 2. 節省記憶體，因為不需要在記憶體中保留額外一組模型權重（從需要當前策略、參考策略與價值函數三者，減少到只需要前兩者）。
@@ -540,11 +540,11 @@ $$
 
 直覺上，GRPO 的更新是在一個批次內比較「同一個問題的多個答案」。模型學著變得更像被標記為正確的答案，而更不像其他答案。這是一種非常簡單的優勢計算方式——優勢衡量的是特定動作在給定狀態下比平均好多少。相對於 PPO、REINFORCE，以及廣義而言以獎勵模型評分執行的 RLHF（相對於輸出獎勵），GRPO 通常以每個提示詞高得多的樣本數來運行，因為優勢完全取決於一個補全相對於同提示詞其他補全的相對價值。在這裡，當前策略會對給定提示詞生成多個回應，而群組式的 GRPO 優勢估計便獲得了寶貴的脈絡。PPO 與基礎策略梯度演算法的設計初衷是準確估計每一個補全的獎勵（事實上，在某些情況下更多補全對改善價值估計幫助不大）。GRPO 及其變體特別適合現代語言模型工具——對同一個提示詞取得多個補全是非常自然的事（相較之下，例如在機器人任務中從同一個環境狀態取得多個動作就沒那麼自然）。
 
-GRPO 的優勢計算在偏差上有其取捨。以標準差做正規化，會獎勵批次中答案正確率變異低的問題。對於答案幾乎全對或全錯的問題，標準差會較低，優勢因而較高。Liu et al. 2025 [118] 基於這個偏差提出移除標準差項，但這麼做的代價是調降了「全錯之中只有少數正確答案」的問題的權重——而這些可能正是對模型而言寶貴的學習訊號。這些高變異數的提示詞恰恰可能是最困難的案例：只有少數取樣的補全找到了正確答案，從而提供強力的訓練訊號。
+GRPO 的優勢計算在偏差上有其取捨。以標準差做正規化，會獎勵批次中答案正確率變異低的問題。對於答案幾乎全對或全錯的問題，標準差會較低，優勢因而較高。Liu et al. 2025 [[118]](bibliography.html#ref-118) 基於這個偏差提出移除標準差項，但這麼做的代價是調降了「全錯之中只有少數正確答案」的問題的權重——而這些可能正是對模型而言寶貴的學習訊號。這些高變異數的提示詞恰恰可能是最困難的案例：只有少數取樣的補全找到了正確答案，從而提供強力的訓練訊號。
 
 式 58 是在結果監督（outcome supervision，無論是標準獎勵模型還是單一可驗證獎勵）下運作時 GRPO 的實作方式；在過程監督（process supervision）下則需要不同的實作。在後者的情況中，GRPO 把優勢計算為後續推理步驟的正規化獎勵總和。
 
-最後，GRPO 的優勢估計也可以在不使用 PPO 裁剪的情況下，套用到更基礎的策略梯度版本上（例如 REINFORCE），但這不是其標準形式。作為這些演算法彼此交織的一個例子，我們可以證明 GRPO 的一個變體 Dr. GRPO（GRPO Done Right）[118] 中的優勢估計，與 RLOO 估計（以其他樣本的平均獎勵作為基準線）在只差一個常數縮放因子的意義下等價（這個因子通常無關緊要，因為實作上會對優勢做正規化）。Dr. GRPO 從式 58 中移除了標準差正規化項——注意這同時也把優勢「放大」了，等價於對答案分數有變異的樣本提高 GRPO 的學習率。這解決了偏向低獎勵變異數問題（即答案幾乎全對或全錯）的偏差，但若「從只有一個樣本答對的問題中學習」很重要，則可能付出代價。群組大小為 $G$ 時，補全 $i$ 的 Dr. GRPO 優勢定義為：
+最後，GRPO 的優勢估計也可以在不使用 PPO 裁剪的情況下，套用到更基礎的策略梯度版本上（例如 REINFORCE），但這不是其標準形式。作為這些演算法彼此交織的一個例子，我們可以證明 GRPO 的一個變體 Dr. GRPO（GRPO Done Right）[[118]](bibliography.html#ref-118) 中的優勢估計，與 RLOO 估計（以其他樣本的平均獎勵作為基準線）在只差一個常數縮放因子的意義下等價（這個因子通常無關緊要，因為實作上會對優勢做正規化）。Dr. GRPO 從式 58 中移除了標準差正規化項——注意這同時也把優勢「放大」了，等價於對答案分數有變異的樣本提高 GRPO 的學習率。這解決了偏向低獎勵變異數問題（即答案幾乎全對或全錯）的偏差，但若「從只有一個樣本答對的問題中學習」很重要，則可能付出代價。群組大小為 $G$ 時，補全 $i$ 的 Dr. GRPO 優勢定義為：
 
 $$
 \tilde{A}_i = r_i - \text{mean}(r_1, r_2, \cdots, r_G) = r_i - \frac{1}{G}\sum_{j=1}^{G} r_j \tag{59}
@@ -583,7 +583,7 @@ $$
 
 PPO 與 GRPO 在 token 層級施加重要性抽樣，並透過裁剪「替代目標（surrogate objective）」來穩定學習。然而，這種做法有一個微妙的失效模式：當某個 token 的重要性比值移出裁剪範圍 $[1-\varepsilon, 1+\varepsilon]$ 時，該 token 得到的梯度為零。對於罕見但重要的 token——例如模型一開始賦予低機率的關鍵推理步驟——這種「token 丟棄（token dropping）」可能使模型無法學會更可靠地產生它們。
 
-群組序列策略最佳化（GSPO）[122] 擴展了 GRPO，將重要性比值改在序列層級計算，而非 token 層級。這個演算法——以及它的同類 CISPO（修改策略梯度演算法中重要性抽樣的計算方式，稍後討論）——在實務上的動機是：逐 token 的重要性抽樣比值在數值上經常不穩定。概念上的動機則是：當獎勵是指派在序列層級時（如同大多數 RLHF 與 RLVR 的設定），重要性抽樣的修正也應該匹配這個粒度。
+群組序列策略最佳化（GSPO）[[122]](bibliography.html#ref-122) 擴展了 GRPO，將重要性比值改在序列層級計算，而非 token 層級。這個演算法——以及它的同類 CISPO（修改策略梯度演算法中重要性抽樣的計算方式，稍後討論）——在實務上的動機是：逐 token 的重要性抽樣比值在數值上經常不穩定。概念上的動機則是：當獎勵是指派在序列層級時（如同大多數 RLHF 與 RLVR 的設定），重要性抽樣的修正也應該匹配這個粒度。
 
 對於長序列以及／或大型稀疏模型（例如現代的專家混合（Mixture-of-Experts, MoE）模型），token 層級的比值可能表現得很不穩定：單一具有巨大比值的 token 可能主導整次策略更新，或者同一個回應內的許多 token 各自獨立地被裁剪，使學習訊號在單一回應中支離破碎。GSPO 的解法是為每個回應計算單一一個重要性權重。
 
@@ -611,7 +611,7 @@ $$
 
 ### 6.2.10 裁剪重要性抽樣策略最佳化（Clipped Importance Sampling Policy Optimization, CISPO）
 
-裁剪重要性抽樣策略最佳化（CISPO）[123] 採取了不同的路線：它不是裁剪替代目標，而是直接裁剪重要性權重本身，同時保留所有 token 的梯度。這個目標在被裁剪的重要性權重上使用梯度停止（stop-gradient），回歸到 REINFORCE 式的表述，而非 PPO 式的雙邊裁剪：
+裁剪重要性抽樣策略最佳化（CISPO）[[123]](bibliography.html#ref-123) 採取了不同的路線：它不是裁剪替代目標，而是直接裁剪重要性權重本身，同時保留所有 token 的梯度。這個目標在被裁剪的重要性權重上使用梯度停止（stop-gradient），回歸到 REINFORCE 式的表述，而非 PPO 式的雙邊裁剪：
 
 $$
 J_\text{CISPO}(\theta) = \mathbb{E}_{s\sim\mathcal{D},\,\{a_i\}_{i=1}^{K}\sim\pi_{\theta_\text{old}}(\cdot|s)}\left[\frac{1}{\sum_{i=1}^{K}|a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|}\text{sg}\left(\hat{\rho}_{i,t}(\theta)\right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s, a_{i,<t})\right], \tag{66}
@@ -627,7 +627,7 @@ $$
 
 CISPO 與 GSPO 都是由那些將 RL 推向大規模 MoE 模型極限的組織所開發的，而 MoE 模型以數值問題聞名。這些論文強調了逐 token 重要性抽樣比值有多不穩定、會為梯度帶來多大的變異數而妨礙學習。這使得這些演算法在大規模模型上可能特別有影響力，但在較小規模的學術實驗中，其效益的研究還較少。
 
-CISPO 也允許不對稱的裁剪邊界（$\varepsilon_\text{low} \neq \varepsilon_\text{high}$），類似本章稍後討論的 DAPO「clip-higher」修改——允許模型想要上調權重的 token 有更大的更新幅度，從而鼓勵探索。相關工作還包括 Tapered Off-Policy REINFORCE（TOPR）[124]，它同樣直接裁剪 IS 權重（像 CISPO）而非在目標函數內裁剪（像 PPO/GRPO），但它在序列層級運作（像 GSPO），並依據獎勵的正負號使用不對稱裁剪——對正獎勵不施加 IS 修正，而對負獎勵把比值裁剪到 $[0, 1]$——從而實現穩定的 off-policy 學習。
+CISPO 也允許不對稱的裁剪邊界（$\varepsilon_\text{low} \neq \varepsilon_\text{high}$），類似本章稍後討論的 DAPO「clip-higher」修改——允許模型想要上調權重的 token 有更大的更新幅度，從而鼓勵探索。相關工作還包括 Tapered Off-Policy REINFORCE（TOPR）[[124]](bibliography.html#ref-124)，它同樣直接裁剪 IS 權重（像 CISPO）而非在目標函數內裁剪（像 PPO/GRPO），但它在序列層級運作（像 GSPO），並依據獎勵的正負號使用不對稱裁剪——對正獎勵不施加 IS 修正，而對負獎勵把比值裁剪到 $[0, 1]$——從而實現穩定的 off-policy 學習。
 
 ### 6.2.11 演算法比較
 
@@ -720,14 +720,14 @@ $$
 
 這類訓練還牽涉許多其他小細節。舉例來說，對語言模型進行 RLHF 時，一個關鍵步驟是生成之後要交給獎勵模型評分的文字。正常情況下，模型應該生成一個序列結束（end-of-sequence, EOS）token 來表示它已完成生成，但常見的做法是對生成長度設定硬性上限，以便有效利用基礎設施。RLHF 的一種失敗模式是模型的回答經常被截斷，導致獎勵模型的評分落到分布之外（out-of-distribution），產生無法預測的分數。解決之道是*只*在出現 `eos_token` 時才執行獎勵模型評分，否則就對生成過長的模型施加懲罰。
 
-流行的 RLHF 開源工具在各演算法的實作細節上差異很大（見 [125] 中的表 10）。此處未涵蓋的一些設計決策包括：
+流行的 RLHF 開源工具在各演算法的實作細節上差異很大（見 [[125]](bibliography.html#ref-125) 中的表 10）。此處未涵蓋的一些設計決策包括：
 
-- **價值網路初始化（Value network initialization）**：PPO 與其他類似演算法內部使用的學習型價值網路，可以從相同架構的另一個模型出發，也可以用隨機權重初始化。這對效能可能有很大影響。InstructGPT [3] 建立的標準做法（Tülu 3 在其 RLVR 工作中再度沿用 [6]）是用 RLHF 期間使用的獎勵模型來初始化價值網路。也有人使用 RLHF 訓練之前的檢查點（通常是 SFT 模型）並附加一個隨機初始化的價值頭（value head），或使用完全重新初始化的語言模型（較不常見，因為 RLHF 會需要更久才能收斂，但可行）。
+- **價值網路初始化（Value network initialization）**：PPO 與其他類似演算法內部使用的學習型價值網路，可以從相同架構的另一個模型出發，也可以用隨機權重初始化。這對效能可能有很大影響。InstructGPT [[3]](bibliography.html#ref-3) 建立的標準做法（Tülu 3 在其 RLVR 工作中再度沿用 [[6]](bibliography.html#ref-6)）是用 RLHF 期間使用的獎勵模型來初始化價值網路。也有人使用 RLHF 訓練之前的檢查點（通常是 SFT 模型）並附加一個隨機初始化的價值頭（value head），或使用完全重新初始化的語言模型（較不常見，因為 RLHF 會需要更久才能收斂，但可行）。
 - **獎勵正規化、獎勵白化與（或）優勢白化（Reward normalization, reward whitening, and/or advantage whitening）**：正規化將 RM（或環境）給出的所有數值限制在 0 到 1 之間，有助於學習穩定性。白化（whitening）更進一步，把獎勵或優勢估計轉換為零均值、單位變異數，能提供更強的穩定性提升。
-- **不同的 KL 估計器（Different KL estimators）**：面對複雜的語言模型，要精確計算模型之間的 KL 散度可能相當複雜，因此常以多種近似方法取代精確計算 [126]。
+- **不同的 KL 估計器（Different KL estimators）**：面對複雜的語言模型，要精確計算模型之間的 KL 散度可能相當複雜，因此常以多種近似方法取代精確計算 [[126]](bibliography.html#ref-126)。
 - **KL 控制器（KL controllers）**：PPO 及相關演算法的原始實作具有動態控制器，會鎖定特定的 KL 目標值，並根據近期的量測結果調整懲罰強度。大多數現代 RLHF 實作使用靜態 KL 懲罰，但這一點同樣可能有所不同。
 
-關於 RLHF 實作細節的更多資訊，請參閱 [127]。關於這些演算法的進一步資訊，請參閱 [128]。
+關於 RLHF 實作細節的更多資訊，請參閱 [[127]](bibliography.html#ref-127)。關於這些演算法的進一步資訊，請參閱 [[128]](bibliography.html#ref-128)。
 
 ### 6.3.1 策略梯度基礎（Policy-Gradient Basics）
 
@@ -765,7 +765,7 @@ sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
             completion_mask.sum(dim=1)).mean()
 ```
 
-**策略 2：逐 token 正規化（Per-token normalization）**（DAPO [129]）
+**策略 2：逐 token 正規化（Per-token normalization）**（DAPO [[129]](bibliography.html#ref-129)）
 
 $$
 L = \frac{\sum_{i=1}^{B}\sum_{t=1}^{|a_i|} \ell_{i,t}}{\sum_{i=1}^{B} |a_i|} \tag{69}
@@ -779,7 +779,7 @@ token_loss = ((per_token_loss * completion_mask).sum() / \
             completion_mask.sum())
 ```
 
-**策略 3：固定長度正規化（Fixed-length normalization）**（Dr. GRPO [118]）
+**策略 3：固定長度正規化（Fixed-length normalization）**（Dr. GRPO [[118]](bibliography.html#ref-118)）
 
 $$
 L = \frac{1}{B}\sum_{i=1}^{B} \frac{1}{L_{\max}}\sum_{t=1}^{|a_i|} \ell_{i,t} \tag{70}
@@ -894,9 +894,9 @@ print("ratio.grad", ratio.grad)
 
 #### 6.3.2.2 相關議題：MDP 與拉霸機框架（Related: MDP vs. Bandit Framing）
 
-損失聚合的選擇，連結到我們如何框架化 RL 問題這個更深層的區別。**MDP（token 層級）**觀點把每個 token $a_t$ 視為一個動作，狀態 $s_t$ 則是當前的前綴。實務上，當我們以學習到的價值函數 $V(s_t)$ 計算 token 層級的優勢（例如 GAE [112]）並逐 token 施加 KL 懲罰時，用的就是這種框架。搭配學習型價值網路的 PPO 是典型範例 [116]。
+損失聚合的選擇，連結到我們如何框架化 RL 問題這個更深層的區別。**MDP（token 層級）**觀點把每個 token $a_t$ 視為一個動作，狀態 $s_t$ 則是當前的前綴。實務上，當我們以學習到的價值函數 $V(s_t)$ 計算 token 層級的優勢（例如 GAE [[112]](bibliography.html#ref-112)）並逐 token 施加 KL 懲罰時，用的就是這種框架。搭配學習型價值網路的 PPO 是典型範例 [[116]](bibliography.html#ref-116)。
 
-相對地，**拉霸機（bandit，序列層級）**觀點把整個補全視為單一動作，對應一個純量獎勵 $R$。在程式碼中，這代表計算一個序列層級的優勢 $A_{\text{seq}}$，並將它廣播到所有 token。RLOO 與 GRPO 式的優勢常用於這種拉霸機式設定 [115] [111] [121]。DPO 與 A-LoL 等直接對齊方法也定義序列層級的目標，儘管它們並非策略梯度估計器 [130]。
+相對地，**拉霸機（bandit，序列層級）**觀點把整個補全視為單一動作，對應一個純量獎勵 $R$。在程式碼中，這代表計算一個序列層級的優勢 $A_{\text{seq}}$，並將它廣播到所有 token。RLOO 與 GRPO 式的優勢常用於這種拉霸機式設定 [[115]](bibliography.html#ref-115) [[111]](bibliography.html#ref-111) [[121]](bibliography.html#ref-121)。DPO 與 A-LoL 等直接對齊方法也定義序列層級的目標，儘管它們並非策略梯度估計器 [[130]](bibliography.html#ref-130)。
 
 請注意，許多 GRPO 實作使用拉霸機式優勢，*同時*在損失中額外加入逐 token 的 KL 項；而許多 PPO/RLOO 實作則在計算優勢之前，就把 KL 折入獎勵之中；兩種慣例在實務上都存在。
 
@@ -924,7 +924,7 @@ advantages = gae(per_token_rewards, values, done_mask, gamma=1.0, lam=0.95)
 
 ### 6.3.3 非同步 RL 系統（Asynchronous RL Systems）
 
-策略梯度演算法的預設實作是所謂的**同策略（on-policy）**執行：智慧體（語言模型）採取的動作（生成內容）會先被評分，然後才更新模型。策略梯度的理論推導依賴所有動作都嚴格同策略，也就是模型永遠掌握最新試驗／rollout 的結果。實務上，維持嚴格的同策略執行會大幅拖慢訓練 [131]——而且無論如何，完美的同步在技術上本來就不可能。因此，最近所有語言模型上的實證結果，其實都稍微超出理論證明的範圍。實務上發生的事，是針對「實際行得通的做法」來設計演算法與系統。
+策略梯度演算法的預設實作是所謂的**同策略（on-policy）**執行：智慧體（語言模型）採取的動作（生成內容）會先被評分，然後才更新模型。策略梯度的理論推導依賴所有動作都嚴格同策略，也就是模型永遠掌握最新試驗／rollout 的結果。實務上，維持嚴格的同策略執行會大幅拖慢訓練 [[131]](bibliography.html#ref-131)——而且無論如何，完美的同步在技術上本來就不可能。因此，最近所有語言模型上的實證結果，其實都稍微超出理論證明的範圍。實務上發生的事，是針對「實際行得通的做法」來設計演算法與系統。
 
 ![圖](../webapp/assets/figures/fig-p082-1.png)
 *圖 23：依循 Noukhovitch 等人（2024）的做法，比較同步與非同步 RL 訓練中「生成—更新」階段的示意圖。*
@@ -936,15 +936,15 @@ advantages = gae(per_token_rewards, values, done_mask, gamma=1.0, lam=0.95)
 ![圖](../webapp/assets/figures/fig-p083-1.png)
 *圖 24：一個分散式 RL 系統範例：透過管理兩個佇列，將資料傳遞給 learner 與 actor 的 GPU，兩者可以用 Ray 等分散式計算函式庫進行同步。Olmo Team 2025，授權 CC-BY。*
 
-隨著這些推理模型的興起，人們進一步關注讓訓練與推論迴圈完全異策略（off-policy）化：策略梯度更新的訓練批次，由多個實例生成答案時最近完成的 rollout 填滿 [132] [133]。完全非同步的訓練還能讓 RL 訓練更容易橫跨多個資料中心擴展，因為可以選擇拉長 learner 節點（執行策略梯度步驟）與 actor（負責解題）之間權重同步的時間間隔 [134]。
+隨著這些推理模型的興起，人們進一步關注讓訓練與推論迴圈完全異策略（off-policy）化：策略梯度更新的訓練批次，由多個實例生成答案時最近完成的 rollout 填滿 [[132]](bibliography.html#ref-132) [[133]](bibliography.html#ref-133)。完全非同步的訓練還能讓 RL 訓練更容易橫跨多個資料中心擴展，因為可以選擇拉長 learner 節點（執行策略梯度步驟）與 actor（負責解題）之間權重同步的時間間隔 [[134]](bibliography.html#ref-134)。
 
-相關方法也在探索完全異策略的策略梯度演算法 [124]。
+相關方法也在探索完全異策略的策略梯度演算法 [[124]](bibliography.html#ref-124)。
 
 ### 6.3.4 截斷重要性抽樣（Truncated Importance Sampling）
 
-截斷重要性抽樣（Truncated Importance Sampling, TIS）是現代語言模型非同步 RL 框架中，用來穩定訓練的一項關鍵工具。重要性抽樣（importance sampling）是一種校正手段，用來重新加權從某個分布抽出的樣本，以估計另一個分布下的期望值（如第 (62) 式所介紹）。截斷重要性抽樣 [135] 以 $\min(\rho, C)$（$C$ 為某個常數）為這些權重設定上限，用少量偏差換取策略梯度中有界的變異數。
+截斷重要性抽樣（Truncated Importance Sampling, TIS）是現代語言模型非同步 RL 框架中，用來穩定訓練的一項關鍵工具。重要性抽樣（importance sampling）是一種校正手段，用來重新加權從某個分布抽出的樣本，以估計另一個分布下的期望值（如第 (62) 式所介紹）。截斷重要性抽樣 [[135]](bibliography.html#ref-135) 以 $\min(\rho, C)$（$C$ 為某個常數）為這些權重設定上限，用少量偏差換取策略梯度中有界的變異數。
 
-這是施加在策略梯度上的重要性抽樣校正，但與 PPO 和 CISPO 的雙邊裁剪（將比值約束在 1 附近）不同，TIS 使用單邊上限：比值可以自由降到 1 以下，但會被截在 $C$，以防止極端的向上加權。在 PPO、GRPO、CISPO（及相關演算法）中，比值 $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s)/\pi_{\theta_{\text{old}}}(a_t \mid s)$ 校正的是同一個 RL 批次內、多個梯度步之間的策略漂移（policy drift）。當我們轉向以前一小節的非同步性為核心概念的現實世界 RL 框架時，還可能出現更大的數值差異來源（同樣需要重要性抽樣的數值校正）。即使抽樣器（sampler）與 learner 共用完全相同的參數 $\theta$，它們的有效 token 分布仍可能不同，因為推論引擎（例如 vLLM）與訓練框架（例如 FSDP）使用不同的核心（kernel）、精度與平行化策略 [136]。因此，把同一個策略在兩個系統上的評估結果加以區分是有用的，記為 $\pi_\theta^{\text{sampler}}$ 與 $\pi_\theta^{\text{learner}}$，並定義對應的比值及其截斷形式：
+這是施加在策略梯度上的重要性抽樣校正，但與 PPO 和 CISPO 的雙邊裁剪（將比值約束在 1 附近）不同，TIS 使用單邊上限：比值可以自由降到 1 以下，但會被截在 $C$，以防止極端的向上加權。在 PPO、GRPO、CISPO（及相關演算法）中，比值 $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s)/\pi_{\theta_{\text{old}}}(a_t \mid s)$ 校正的是同一個 RL 批次內、多個梯度步之間的策略漂移（policy drift）。當我們轉向以前一小節的非同步性為核心概念的現實世界 RL 框架時，還可能出現更大的數值差異來源（同樣需要重要性抽樣的數值校正）。即使抽樣器（sampler）與 learner 共用完全相同的參數 $\theta$，它們的有效 token 分布仍可能不同，因為推論引擎（例如 vLLM）與訓練框架（例如 FSDP）使用不同的核心（kernel）、精度與平行化策略 [[136]](bibliography.html#ref-136)。因此，把同一個策略在兩個系統上的評估結果加以區分是有用的，記為 $\pi_\theta^{\text{sampler}}$ 與 $\pi_\theta^{\text{learner}}$，並定義對應的比值及其截斷形式：
 
 $$
 \rho_t^{\text{learner}} = \frac{\pi_\theta^{\text{learner}}(a_t \mid s, a_{<t})}{\pi_\theta^{\text{sampler}}(a_t \mid s, a_{<t})}, \qquad \bar{\rho}_t^{\text{learner}} = \min(\rho_t^{\text{learner}},\, C). \tag{71}
@@ -968,7 +968,7 @@ $$
 J_{\text{PPO+TIS}}(\theta) = \mathbb{E}\left[ \min\!\left( \rho_t^{\text{policy}} A_t,\ \operatorname{clip}\!\left(\rho_t^{\text{policy}},\, 1-\varepsilon,\, 1+\varepsilon\right) A_t \right) \cdot \bar{\rho}_t^{\text{learner}} \right]. \tag{73}
 $$
 
-這裡 $\pi_{\theta_{\text{old}}} \neq \pi_{\text{gen}}$：舊的 logprobs 來自 learner，而不是 sampler。如果某個框架跳過這個重新計算的步驟，直接把 sampler 的 logprobs 當作 $\pi_{\theta_{\text{old}}}$，那麼策略比值本身就已經涵蓋了後端不匹配，不需要額外的 TIS 校正——但此時裁剪操作作用在一個更嘈雜的比值上，這個比值甚至在任何梯度步之前就偏離了 1.0。這就是 Yao 等人 [136] 提出的「你的框架偷偷讓你做了異策略 RL」（your framework secretly brings you off-policy RL）觀察。
+這裡 $\pi_{\theta_{\text{old}}} \neq \pi_{\text{gen}}$：舊的 logprobs 來自 learner，而不是 sampler。如果某個框架跳過這個重新計算的步驟，直接把 sampler 的 logprobs 當作 $\pi_{\theta_{\text{old}}}$，那麼策略比值本身就已經涵蓋了後端不匹配，不需要額外的 TIS 校正——但此時裁剪操作作用在一個更嘈雜的比值上，這個比值甚至在任何梯度步之前就偏離了 1.0。這就是 Yao 等人 [[136]](bibliography.html#ref-136) 提出的「你的框架偷偷讓你做了異策略 RL」（your framework secretly brings you off-policy RL）觀察。
 
 實務上，LLM 的 RL 系統會把 TIS 作為策略梯度損失上的逐 token 校正權重來使用：
 
@@ -1081,7 +1081,7 @@ $$
 
 ### 6.3.6 範例：GRPO（Example: GRPO）
 
-DeepSeekMath 論文描述了 GRPO 一些與 PPO 不同的實作細節 [121]，尤其是與深度強化學習（而非語言模型）中 PPO 的標準用法相比。例如，RLHF 最佳化中的 KL 懲罰（回想一下，在沒有獎勵模型、以可驗證獎勵訓練推理模型時，也會使用 KL 懲罰）是直接施加在損失更新中，而不是施加在獎勵函數上。標準 RLHF 的 KL 懲罰施加方式為 $r = r_\theta - \beta \mathcal{D}_{\mathrm{KL}}$，而 GRPO 的實作大致是：
+DeepSeekMath 論文描述了 GRPO 一些與 PPO 不同的實作細節 [[121]](bibliography.html#ref-121)，尤其是與深度強化學習（而非語言模型）中 PPO 的標準用法相比。例如，RLHF 最佳化中的 KL 懲罰（回想一下，在沒有獎勵模型、以可驗證獎勵訓練推理模型時，也會使用 KL 懲罰）是直接施加在損失更新中，而不是施加在獎勵函數上。標準 RLHF 的 KL 懲罰施加方式為 $r = r_\theta - \beta \mathcal{D}_{\mathrm{KL}}$，而 GRPO 的實作大致是：
 
 $$
 L = L_{\text{policy gradient}} + \beta * \mathcal{D}_{\mathrm{KL}} \tag{75}
@@ -1171,7 +1171,7 @@ RLOO 其餘的實作細節，同樣遵循實作策略梯度時的其他取捨。
 
 ### 6.4.1 廣義優勢估計（Generalized Advantage Estimation, GAE）
 
-廣義優勢估計（Generalized Advantage Estimation, GAE）是策略梯度演算法計算優勢的另一種方法 [112]，能更好地平衡偏差與變異數之間的權衡。傳統的單步優勢估計可能引入過多偏差，而使用完整軌跡則常有高變異數的問題。GAE 計算多步優勢估計的指數加權平均，其中超參數 $\lambda$ 控制偏差–變異數的權衡——範圍從單步 TD（$\lambda = 0$）到完整軌跡回報（$\lambda = 1$）；$\lambda = 0.95$ 是 LLM 微調的常見預設值。
+廣義優勢估計（Generalized Advantage Estimation, GAE）是策略梯度演算法計算優勢的另一種方法 [[112]](bibliography.html#ref-112)，能更好地平衡偏差與變異數之間的權衡。傳統的單步優勢估計可能引入過多偏差，而使用完整軌跡則常有高變異數的問題。GAE 計算多步優勢估計的指數加權平均，其中超參數 $\lambda$ 控制偏差–變異數的權衡——範圍從單步 TD（$\lambda = 0$）到完整軌跡回報（$\lambda = 1$）；$\lambda = 0.95$ 是 LLM 微調的常見預設值。
 
 優勢估計可以有多種形式，我們可以定義一個 $n$ 步優勢估計器（類似本章開頭的 TD 殘差）如下：
 
@@ -1229,7 +1229,7 @@ advantages = advantages.detach()   # 用於策略損失
 
 這個反向迴圈累積時序差分（TD）誤差（$\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$），它衡量實際結果比價值函數的預測好或壞多少，並以 $(\gamma\lambda)^l$ 進行指數衰減。在終止 token 處，`not_done=0` 防止從後續狀態進行自舉（bootstrapping）並重設 GAE 累積器，因此每個回合的優勢是各自獨立計算的（由於迴圈是反向執行的，終止 token 會在回合邊界乾淨地截斷指數加權的累積——這使得這個實作對打包（packing）友善，能正確處理串接成一條的多個序列）。最終的 `targets` 作為另外訓練的價值函數（在這個 GAE 迴圈之外學習）的回歸目標，而 detach 後的 `advantages` 用來加權策略梯度——之所以 detach，是為了讓策略更新不會把梯度反向傳播進價值網路。在語言模型的 RLHF 中，$\gamma = 1.0$ 很常見，因為回合是短的 token 序列，偏好無折扣的信用分配（credit assignment）（而且往往是所有 token 一起）。
 
-*延伸閱讀請見 [137]。*
+*延伸閱讀請見 [[137]](bibliography.html#ref-137)。*
 
 ### 6.4.2 雙重正則化（Double Regularization）
 
@@ -1239,19 +1239,19 @@ advantages = advantages.detach()   # 用於策略損失
 
 在 PPO 中，負責限制更新步長上限的目標稱為代理目標（surrogate objective）。要監控 PPO 的正則化對 RLHF 更新的影響程度，可以觀察許多流行實作中的 clip fraction 變數，也就是批次中機率比值落在裁剪區間之外的樣本百分比。這是 PPO 正則器可能生效頻率的有用代理指標，但並非每個這樣的樣本梯度都為零：只有在選中被裁剪的分支時，代理目標才會變平——例如比值高於 $1+\varepsilon$ 的正優勢樣本，或比值低於 $1-\varepsilon$ 的負優勢樣本。
 
-在語言模型的實務中，PPO 與 GRPO 這類演算法通常每批次只執行一個梯度步，這意味著 PPO 原生的正則化從未生效（因為裁剪只可能在策略於批次內大幅改變時發生），而 KL 距離懲罰佔主導地位。不過這並非通則。例如，DAPO 每批次使用 16 個梯度步 [129]，而 Tülu 3 對 8B 與 70B 模型每批次使用 4 次 PPO 更新迭代，但對 405B 模型降為 1 次以維持訓練穩定性 [6]。
+在語言模型的實務中，PPO 與 GRPO 這類演算法通常每批次只執行一個梯度步，這意味著 PPO 原生的正則化從未生效（因為裁剪只可能在策略於批次內大幅改變時發生），而 KL 距離懲罰佔主導地位。不過這並非通則。例如，DAPO 每批次使用 16 個梯度步 [[129]](bibliography.html#ref-129)，而 Tülu 3 對 8B 與 70B 模型每批次使用 4 次 PPO 更新迭代，但對 405B 模型降為 1 次以維持訓練穩定性 [[6]](bibliography.html#ref-6)。
 
 ### 6.4.3 延伸閱讀（Further Reading）
 
 隨著 RLHF 鞏固了它在現代後訓練（post-training）核心的地位，人們陸續提出其他策略梯度 RL 演算法以及一般性的 RL 演算法來改進訓練流程，但它們尚未在主導最佳實務方面扮演核心角色。延伸閱讀的例子包括：
 
-- **成對近端策略最佳化（Pairwise Proximal Policy Optimization, P3O；Wu 等人，2023）** [138]：直接在 PPO 式的策略更新中使用成對資料，無需學習中介的獎勵模型。
-- **軟性自適應策略最佳化（Soft Adaptive Policy Optimization, SAPO）** [139]：以平滑、由溫度控制的閘控（gating）取代 PPO/GRPO 式的硬裁剪，目標是建立連續的信賴域，在降低異策略 token 權重的同時，保留接近同策略的學習訊號。
-- 異策略的策略梯度演算法可以實現更進一步的非同步訓練，例如**對比策略梯度（Contrastive Policy Gradient, CoPG）** [140]（直接對齊演算法 IPO 與普通策略梯度的推廣），Cohere 曾將其用於其 Command A 模型 [57]。
-- 也有其他為語言模型設計的 REINFORCE 演算法實作，例如 **ReMax** [141]，它實作了一種專門為了因應獎勵模型推論的不確定性來源而設計的基準線正規化。
-- 部分基礎模型，例如 Apple Intelligence Foundation Models [142] 或 Kimi k1.5 推理模型 [143]，使用了**鏡像下降策略最佳化（Mirror Descent Policy Optimization, MDPO）** [144] 的變體。這方面的基礎研究仍在持續發展中 [145]，但 Mirror Descent 是一種最佳化方法，而不直接是一種策略梯度演算法。這裡的重點在於，它能以與既有 RL 基礎設施非常相似的方式替換使用。
-- **解耦裁剪與動態抽樣策略最佳化（Decoupled Clip and Dynamic sAmpling Policy Optimization, DAPO）**：針對推理語言模型提出對 GRPO 的 4 項修改，以更適應需要長軌跡、且需要提高新的、未被充分利用的 token 機率的場景 [129]。這些修改是：1、使用兩個不同的裁剪超參數 $\varepsilon_{\text{low}}$ 與 $\varepsilon_{\text{high}}$，讓 logratio 正側的裁剪可以踏出更大的步伐以利探索；2、動態抽樣，移除批次中所有獎勵全為 0 或全為 1 的樣本（沒有學習訊號）；3、使用前文「實作：GRPO」中討論的逐 token 損失；以及 4、對過長的樣本施加軟性懲罰，以避免從被截斷的答案中學習。
-- **基於價值的增強近端策略最佳化（Value-based Augmented Proximal Policy Optimization, VAPO）** [146]：結合 DAPO 的多項最佳化（包括更高的裁剪上限、token 層級策略梯度與不同的長度正規化）與 Value-Calibrated PPO [147] 的洞見，預先訓練價值函數並使用長度自適應的 GAE，展示了基於價值的方法相對於 GRPO 的潛力。
+- **成對近端策略最佳化（Pairwise Proximal Policy Optimization, P3O；Wu 等人，2023）** [[138]](bibliography.html#ref-138)：直接在 PPO 式的策略更新中使用成對資料，無需學習中介的獎勵模型。
+- **軟性自適應策略最佳化（Soft Adaptive Policy Optimization, SAPO）** [[139]](bibliography.html#ref-139)：以平滑、由溫度控制的閘控（gating）取代 PPO/GRPO 式的硬裁剪，目標是建立連續的信賴域，在降低異策略 token 權重的同時，保留接近同策略的學習訊號。
+- 異策略的策略梯度演算法可以實現更進一步的非同步訓練，例如**對比策略梯度（Contrastive Policy Gradient, CoPG）** [[140]](bibliography.html#ref-140)（直接對齊演算法 IPO 與普通策略梯度的推廣），Cohere 曾將其用於其 Command A 模型 [[57]](bibliography.html#ref-57)。
+- 也有其他為語言模型設計的 REINFORCE 演算法實作，例如 **ReMax** [[141]](bibliography.html#ref-141)，它實作了一種專門為了因應獎勵模型推論的不確定性來源而設計的基準線正規化。
+- 部分基礎模型，例如 Apple Intelligence Foundation Models [[142]](bibliography.html#ref-142) 或 Kimi k1.5 推理模型 [[143]](bibliography.html#ref-143)，使用了**鏡像下降策略最佳化（Mirror Descent Policy Optimization, MDPO）** [[144]](bibliography.html#ref-144) 的變體。這方面的基礎研究仍在持續發展中 [[145]](bibliography.html#ref-145)，但 Mirror Descent 是一種最佳化方法，而不直接是一種策略梯度演算法。這裡的重點在於，它能以與既有 RL 基礎設施非常相似的方式替換使用。
+- **解耦裁剪與動態抽樣策略最佳化（Decoupled Clip and Dynamic sAmpling Policy Optimization, DAPO）**：針對推理語言模型提出對 GRPO 的 4 項修改，以更適應需要長軌跡、且需要提高新的、未被充分利用的 token 機率的場景 [[129]](bibliography.html#ref-129)。這些修改是：1、使用兩個不同的裁剪超參數 $\varepsilon_{\text{low}}$ 與 $\varepsilon_{\text{high}}$，讓 logratio 正側的裁剪可以踏出更大的步伐以利探索；2、動態抽樣，移除批次中所有獎勵全為 0 或全為 1 的樣本（沒有學習訊號）；3、使用前文「實作：GRPO」中討論的逐 token 損失；以及 4、對過長的樣本施加軟性懲罰，以避免從被截斷的答案中學習。
+- **基於價值的增強近端策略最佳化（Value-based Augmented Proximal Policy Optimization, VAPO）** [[146]](bibliography.html#ref-146)：結合 DAPO 的多項最佳化（包括更高的裁剪上限、token 層級策略梯度與不同的長度正規化）與 Value-Calibrated PPO [[147]](bibliography.html#ref-147) 的洞見，預先訓練價值函數並使用長度自適應的 GAE，展示了基於價值的方法相對於 GRPO 的潛力。
 
 ## 6.5 建議實驗（Suggested Experiments）
 

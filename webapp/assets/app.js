@@ -35,6 +35,32 @@
     });
   }
 
+  // 全書共用 citation 導覽：章節的 [N] 連到文獻，文獻條目提供穩定錨點。
+  const pageName = window.location.pathname.split('/').pop();
+  if (pageName === 'bibliography.html') {
+    const bibliography = [...content.children].find((el) => el.tagName === 'OL');
+    if (bibliography) {
+      bibliography.classList.add('bibliography-list');
+      bibliography.querySelectorAll(':scope > li').forEach((entry, i) => {
+        const number = i + 1;
+        entry.id = 'ref-' + number;
+        entry.value = number;
+      });
+    }
+    if (/^#ref-\d+$/.test(window.location.hash)) {
+      requestAnimationFrame(() => {
+        const target = document.getElementById(window.location.hash.slice(1));
+        if (target) target.scrollIntoView({ block: 'center' });
+      });
+    }
+  } else {
+    content.querySelectorAll('a[href^="bibliography.html#ref-"]').forEach((citation) => {
+      citation.classList.add('citation');
+      citation.setAttribute('aria-label', '查看參考文獻 ' + citation.textContent);
+      citation.title = '查看參考文獻 ' + citation.textContent;
+    });
+  }
+
   // 側欄目錄（h2 / h3）＋捲動高亮
   const toc = document.getElementById('toc');
   const heads = content.querySelectorAll('h2, h3');

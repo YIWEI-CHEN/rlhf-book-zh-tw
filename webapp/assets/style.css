@@ -102,6 +102,24 @@ img { max-width: 100%; height: auto; }
 .prose .katex-display { overflow-x: auto; overflow-y: hidden; padding: .3rem 0; }
 .prose .katex { font-size: 1.06em; }
 
+/* ===== 引用與參考文獻 ===== */
+.prose a.citation {
+  white-space: nowrap;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.prose .bibliography-list { padding-left: 3.2rem; }
+.prose .bibliography-list > li {
+  scroll-margin-top: 5rem;
+  margin: .35rem 0;
+  padding: .3rem .45rem;
+  border-radius: 6px;
+}
+.prose .bibliography-list > li:target {
+  background: var(--accent-soft);
+  outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
 /* ===== 互動實驗室 ===== */
 .lab-banner {
   display: flex; align-items: center; gap: .7rem;

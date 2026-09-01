@@ -31,9 +31,9 @@
 
 > 譯自 Nathan Lambert, *Reinforcement Learning from Human Feedback*（rlhfbook.com），2026-07-01 版，原文第 31–36 頁。
 
-早期的大型預訓練語言模型（pretrained language model）以下一個詞元預測（next-token prediction）為訓練目標，預設並不具備明確的指令遵循介面。大約在 GPT-3 [63] 發布前後，提示（prompting）與情境學習（in-context learning）成為讓單一模型適應多種任務的常用方法（不過針對特定任務的微調當時仍相當普遍）：在上下文中展示範例，並要求模型完成類似的任務。實務上的下一步便是指令微調（instruction fine-tuning），它教導模型以「指令－回應」的格式作答，而非僅僅接續文字。舉例來說，給定提示「What is the capital of France?」（法國的首都是哪裡？），基礎模型（base model）可能會接續生成「What is the capital of Germany? What is the capital of Italy?…」（德國的首都是哪裡？義大利的首都是哪裡？……）——單純延續問題的模式——而經過指令微調的模型則會回答「The capital of France is Paris.」（法國的首都是巴黎。）
+早期的大型預訓練語言模型（pretrained language model）以下一個詞元預測（next-token prediction）為訓練目標，預設並不具備明確的指令遵循介面。大約在 GPT-3 [[63]](bibliography.html#ref-63) 發布前後，提示（prompting）與情境學習（in-context learning）成為讓單一模型適應多種任務的常用方法（不過針對特定任務的微調當時仍相當普遍）：在上下文中展示範例，並要求模型完成類似的任務。實務上的下一步便是指令微調（instruction fine-tuning），它教導模型以「指令－回應」的格式作答，而非僅僅接續文字。舉例來說，給定提示「What is the capital of France?」（法國的首都是哪裡？），基礎模型（base model）可能會接續生成「What is the capital of Germany? What is the capital of Italy?…」（德國的首都是哪裡？義大利的首都是哪裡？……）——單純延續問題的模式——而經過指令微調的模型則會回答「The capital of France is Paris.」（法國的首都是巴黎。）
 
-指令微調的興起源自兩條研究路線的匯流。首先，NLP 領域從為個別任務量身打造的微調設定，轉向統一的「文字到文字」（text-to-text）或指令式框架，使得標準化多樣的資料集、並以單一模型跨多任務訓練變得直接可行。將各種任務統一到同一框架的著名例子包括 *Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer*（T5 模型）[64]、*Finetuned Language Models Are Zero-Shot Learners*（FLAN 資料集）[65]、*Multitask Prompted Training Enables Zero-Shot Task Generalization*（T0 模型）[66]，以及 *Cross-Task Generalization via Natural Language Crowdsourcing Instructions*（Natural Instructions 資料集）[67]。其次，預訓練語言模型的規模化，加上提示／情境學習的興起，顯示單一模型可以跨任務泛化，但若模型有明確地在「指令－回應」範例上訓練過，這種泛化會可靠得多。這些趨勢共同開啟了在大量指令集合上微調預訓練語言模型的時代——也就是現在通稱的指令微調（instruction fine-tuning, IFT）或監督式微調（supervised fine-tuning, SFT），讓訓練通用模型變得對更廣大的族群觸手可及。
+指令微調的興起源自兩條研究路線的匯流。首先，NLP 領域從為個別任務量身打造的微調設定，轉向統一的「文字到文字」（text-to-text）或指令式框架，使得標準化多樣的資料集、並以單一模型跨多任務訓練變得直接可行。將各種任務統一到同一框架的著名例子包括 *Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer*（T5 模型）[[64]](bibliography.html#ref-64)、*Finetuned Language Models Are Zero-Shot Learners*（FLAN 資料集）[[65]](bibliography.html#ref-65)、*Multitask Prompted Training Enables Zero-Shot Task Generalization*（T0 模型）[[66]](bibliography.html#ref-66)，以及 *Cross-Task Generalization via Natural Language Crowdsourcing Instructions*（Natural Instructions 資料集）[[67]](bibliography.html#ref-67)。其次，預訓練語言模型的規模化，加上提示／情境學習的興起，顯示單一模型可以跨任務泛化，但若模型有明確地在「指令－回應」範例上訓練過，這種泛化會可靠得多。這些趨勢共同開啟了在大量指令集合上微調預訓練語言模型的時代——也就是現在通稱的指令微調（instruction fine-tuning, IFT）或監督式微調（supervised fine-tuning, SFT），讓訓練通用模型變得對更廣大的族群觸手可及。
 
 自問世以來，指令微調（口語上也常簡稱為指令調校，instruction tuning）已日趨成熟，成為許多語言模型建模流程中的標準做法。就本質而言，IFT 是讓語言模型適應目標任務分布最簡單的方法。它為 RLHF 奠定基礎：讓模型先熟悉一種稱為問答（question-answering）的指令格式；對於想把現代技術應用到新領域的人而言，它也是第一個會用到的工具。若缺乏基本的指令遵循能力，本書所討論的多數流程——從偏好資料（preference data）蒐集到線上 RLHF 最佳化——都無法進行。
 
@@ -128,9 +128,9 @@ Are you sure about that?<|im_end|>
 
 在開放生態系中，把聊天模板套用到訊息串列的標準做法，是使用儲存在分詞器設定檔中的 Jinja 程式片段，即 `apply_chat_template`。
 
-上述聊天模板衍生自 OpenAI 的聊天標記語言（Chat Markup Language, ChatML），這是早期試圖標準化訊息格式的嘗試。如今，OpenAI 與其他模型供應商採用階層式系統：使用者可以自行設定系統訊息，但其上還有更高層級的指令，而這些指令未必會揭露給使用者 [68]。
+上述聊天模板衍生自 OpenAI 的聊天標記語言（Chat Markup Language, ChatML），這是早期試圖標準化訊息格式的嘗試。如今，OpenAI 與其他模型供應商採用階層式系統：使用者可以自行設定系統訊息，但其上還有更高層級的指令，而這些指令未必會揭露給使用者 [[68]](bibliography.html#ref-68)。
 
-還存在許多其他聊天模板。其他例子包括 Zephyr 的模板 [26]：
+還存在許多其他聊天模板。其他例子包括 Zephyr 的模板 [[26]](bibliography.html#ref-26)：
 
 ```
 <|system|>
@@ -154,9 +154,9 @@ How can I assist you today?<|endoftext|>
 
 ## 4.2 指令調校的最佳實務（Best Practices for Instruction Tuning）
 
-指令調校作為後訓練與打造有用語言模型的基礎，其地位已相當穩固。達成成功指令調校的方法很多。舉例來說，搭配部分模型參數量化（quantization）的高效率微調，讓訓練變得非常容易入手 [69]。此外，在較窄的領域，例如聊天對齊（chat alignment）——亦即不涉及數學或程式碼等較困難的技能——小而聚焦的資料集就能達到很強的表現 [14]。
+指令調校作為後訓練與打造有用語言模型的基礎，其地位已相當穩固。達成成功指令調校的方法很多。舉例來說，搭配部分模型參數量化（quantization）的高效率微調，讓訓練變得非常容易入手 [[69]](bibliography.html#ref-69)。此外，在較窄的領域，例如聊天對齊（chat alignment）——亦即不涉及數學或程式碼等較困難的技能——小而聚焦的資料集就能達到很強的表現 [[14]](bibliography.html#ref-14)。
 
-ChatGPT 發布後不久，像 No Robots 這類僅有約一萬筆（10K）樣本的人工資料集曾是最先進水準 [70]。數年之後，大規模合成資料集（synthetic dataset）在多數任務上表現最佳 [6]。
+ChatGPT 發布後不久，像 No Robots 這類僅有約一萬筆（10K）樣本的人工資料集曾是最先進水準 [[70]](bibliography.html#ref-70)。數年之後，大規模合成資料集（synthetic dataset）在多數任務上表現最佳 [[6]](bibliography.html#ref-6)。
 
 有幾項原則始終不變：
 
@@ -169,11 +169,11 @@ ChatGPT 發布後不久，像 No Robots 這類僅有約一萬筆（10K）樣本�
 
 雖然損失函數與預訓練所用的相同，仍有幾個關鍵實作細節與預訓練的設定不同。許多做法——例如決定採用哪些平行化（parallelism）方式，把模型切分（shard）到多顆 GPU 上——與預訓練相同，但使用的機器總數通常較少（原因見下列第一項技術差異）：
 
-- **較小的批次大小（batch size）**：與預訓練相比，指令調校（以及偏好微調等其他後訓練技術）使用的批次大小小得多，以便在較窄的資料分布上妥善最佳化，同時保留模型從預訓練獲得的泛化能力。舉例來說，OLMo 2 的預訓練在 7B 模型使用 1024 個打包列（packed-rows）的批次大小、13B 使用 2048，這些模型的總上下文長度為 4096 個詞元，且批次中的每一列都是由多份文件組合而成、填滿整個序列長度。而在後訓練時，這兩個模型都只使用 256 筆*提示*的批次大小 [58]，且不填滿整個序列長度（因此每個批次中未被遮罩的詞元數量少得多）。較小的批次大小意味著這些訓練工作無法像預訓練那樣切分到那麼多裝置上——實務上，分散式訓練設定有每裝置最小批次大小的限制，所以若想在 SFT 中保持較小的全域批次大小，可以累計使用較少的 GPU。實務上，批次大小迫使單一訓練工作同時佔用較少的 GPU 並不構成瓶頸，因為 SFT 的訓練詞元數遠小於預訓練，而且後訓練需要以多個隨機種子（seed）訓練，才能取得最佳的最終表現。
+- **較小的批次大小（batch size）**：與預訓練相比，指令調校（以及偏好微調等其他後訓練技術）使用的批次大小小得多，以便在較窄的資料分布上妥善最佳化，同時保留模型從預訓練獲得的泛化能力。舉例來說，OLMo 2 的預訓練在 7B 模型使用 1024 個打包列（packed-rows）的批次大小、13B 使用 2048，這些模型的總上下文長度為 4096 個詞元，且批次中的每一列都是由多份文件組合而成、填滿整個序列長度。而在後訓練時，這兩個模型都只使用 256 筆*提示*的批次大小 [[58]](bibliography.html#ref-58)，且不填滿整個序列長度（因此每個批次中未被遮罩的詞元數量少得多）。較小的批次大小意味著這些訓練工作無法像預訓練那樣切分到那麼多裝置上——實務上，分散式訓練設定有每裝置最小批次大小的限制，所以若想在 SFT 中保持較小的全域批次大小，可以累計使用較少的 GPU。實務上，批次大小迫使單一訓練工作同時佔用較少的 GPU 並不構成瓶頸，因為 SFT 的訓練詞元數遠小於預訓練，而且後訓練需要以多個隨機種子（seed）訓練，才能取得最佳的最終表現。
 - **提示遮罩（prompt masking）**：預訓練時，批次中的每個詞元都以自迴歸（autoregressive）方式預測，並對它們計算損失。指令調校則會把提示詞元遮罩掉，讓模型不去學習精準預測使用者查詢——只學習回應。其他後訓練演算法也同樣如此。
 - **多輪遮罩（multi-turn masking）**：對於多輪對話，常見有兩種遮罩選擇。（1）*僅最後一輪（final-turn only）*：只有最後一個 assistant 輪次的詞元納入損失，先前所有上下文（包括較早的 assistant 輪次）都被遮罩。長對話仍可「展開」（unroll）成多筆訓練樣本：對一段 $N$ 輪的對話，每筆樣本預測一個 assistant 回應，同時遮罩所有先前的上下文並排除任何後續輪次。（2）*僅遮罩 user 輪次（mask user turns only）*：所有 user 輪次都被遮罩，但*每一個* assistant 輪次都納入損失。在此設定下，若想要更多（更短的）訓練樣本，同樣可以展開，但關鍵差異在於中間的 assistant 回覆會被直接拿來訓練。
 - **與預訓練相同的損失函數**：指令調校使用與預訓練語言模型相同的自迴歸損失函數，但資料與遮罩方式大不相同（只在完整序列上訓練，而預訓練的文件則可以被拆分到不同批次），諸如此類。
-- **學習率（learning rate）**：SFT 通常使用比預訓練小一到兩個數量級的學習率，以妥善因應不同的最佳化動態（較小的資料集、較小的批次，以及強大的預訓練初始化，都傾向採取更保守的更新）。例如，OLMo 2 預訓練的峰值學習率為 $3 \times 10^{-4}$，SFT 則為 $1 \times 10^{-5}$ [58]。Olmo 3 使用較高的 SFT 學習率 $5\text{–}8 \times 10^{-5}$ [18]，部分原因是其訓練基礎設施採用序列打包（sequence packing），把多筆樣本塞進同一條訓練序列，提高了以有效詞元計的等效批次大小。較大的批次能產生變異數較低的梯度估計，進而支撐較高的學習率而不致讓訓練不穩定——這種關係稱為線性縮放法則（linear scaling rule）。學習率通常會在一小部分訓練步數內先暖身（warm up）提升，之後再線性衰減。實務上，團隊通常會掃描多個學習率，並依保留（held-out）評估套件挑選最佳的檢查點（checkpoint）[18]。
+- **學習率（learning rate）**：SFT 通常使用比預訓練小一到兩個數量級的學習率，以妥善因應不同的最佳化動態（較小的資料集、較小的批次，以及強大的預訓練初始化，都傾向採取更保守的更新）。例如，OLMo 2 預訓練的峰值學習率為 $3 \times 10^{-4}$，SFT 則為 $1 \times 10^{-5}$ [[58]](bibliography.html#ref-58)。Olmo 3 使用較高的 SFT 學習率 $5\text{–}8 \times 10^{-5}$ [[18]](bibliography.html#ref-18)，部分原因是其訓練基礎設施採用序列打包（sequence packing），把多筆樣本塞進同一條訓練序列，提高了以有效詞元計的等效批次大小。較大的批次能產生變異數較低的梯度估計，進而支撐較高的學習率而不致讓訓練不穩定——這種關係稱為線性縮放法則（linear scaling rule）。學習率通常會在一小部分訓練步數內先暖身（warm up）提升，之後再線性衰減。實務上，團隊通常會掃描多個學習率，並依保留（held-out）評估套件挑選最佳的檢查點（checkpoint）[[18]](bibliography.html#ref-18)。
 
 ## 4.4 建議實驗（Suggested Experiments）
 
