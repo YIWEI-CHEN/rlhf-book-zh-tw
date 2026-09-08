@@ -58,7 +58,7 @@ img { max-width: 100%; height: auto; }
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
-.brand { font-family: var(--serif); font-weight: 700; font-size: 1.05rem; color: var(--fg); white-space: nowrap; }
+.brand { font-family: var(--serif); font-weight: 700; font-size: 1.05rem; color: var(--fg); }
 .brand span { margin-left: .55rem; font-family: var(--sans); font-weight: 400; font-size: .8rem; color: var(--fg-muted); }
 .brand:hover { text-decoration: none; color: var(--accent); }
 .chapnav { display: flex; align-items: center; gap: .8rem; font-size: .85rem; }

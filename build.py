@@ -21,6 +21,19 @@ PDF = os.path.join(ROOT, "RL_from_human_feedback.pdf")
 BIBLIOGRAPHY = os.path.join(CONTENT, "bibliography.md")
 BIBLIOGRAPHY_DATA = os.path.join(WEBAPP, "assets", "bibliography.json")
 
+BOOK_TITLE = "RLHF - 從人類回饋中強化學習 (增修版)"
+ATTRIBUTION_HTML = (
+    '本站為<strong>非官方正體中文增修版</strong> · '
+    '原書由 Nathan Lambert 與貢獻者撰寫：'
+    '<a href="https://github.com/natolambert/rlhf-book">Reinforcement Learning from Human Feedback</a> · '
+    '正體中文正文與互動網站基於 '
+    '<a href="https://github.com/ai-twinkle/rlhf-book-zh-tw">Twinkle AI Community 的 ai-twinkle/rlhf-book-zh-tw</a> · '
+    '本版由 Yi-Wei Chen 增修，並非原作者或 Twinkle AI 的官方增修版 · '
+    '書稿與翻譯沿用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant">CC BY-NC-SA 4.0</a> '
+    '授權，不得作商業用途 · 支持原作者請購買<a href="https://rlhfbook.com">實體書</a> · '
+    '<a href="https://github.com/YIWEI-CHEN/rlhf-book-zh-tw/tree/yiweichen/zhtw-edition-metadata">本版網站原始碼</a>'
+)
+
 BIBLIOGRAPHY_HEADER = [
     "# 參考文獻（Bibliography）",
     "",
@@ -83,13 +96,13 @@ PAGE_TMPL = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} — RLHF 中文版</title>
+<title>{title} — {book_title}</title>
 <link rel="stylesheet" href="../assets/katex/katex.min.css">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../index.html">RLHF 中文版<span>從人類回饋中強化學習</span></a>
+  <a class="brand" href="../index.html">{book_title}</a>
   <nav class="chapnav">{prev_top}<span class="chapnav-current">{no}</span>{next_top}<a class="gh-star" href="https://github.com/ai-twinkle/rlhf-book-zh-tw" target="_blank" rel="noopener" data-gh-repo="ai-twinkle/rlhf-book-zh-tw"><span class="star-ico">★</span><span class="gh-label">Star</span><b class="gh-count" hidden></b></a></nav>
 </header>
 <div class="layout">
@@ -103,7 +116,7 @@ PAGE_TMPL = """<!DOCTYPE html>
       <div id="lab-root"></div>
     </section>
     <nav class="pager">{prev_card}{next_card}</nav>
-    <footer class="pagefoot">本站為 <a href="https://github.com/ai-twinkle">Twinkle AI Community</a>（台灣）的<strong>非官方社群翻譯</strong>（unofficial community translation）· 譯自 Nathan Lambert,《Reinforcement Learning from Human Feedback》（<a href="https://rlhfbook.com">rlhfbook.com</a>）· 依 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant">CC BY-NC-SA 4.0</a> 授權，僅供學習研究、不得作商業用途。</footer>
+    <footer class="pagefoot">{attribution}</footer>
   </main>
 </div>
 <script type="text/markdown" id="chapter-md">
@@ -123,15 +136,16 @@ INDEX_TMPL = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RLHF 中文版 — 從人類回饋中強化學習</title>
+<title>{book_title}</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <section class="hero">
-  <div class="eyebrow">繁體中文全譯本 · 互動版</div>
-  <h1>從人類回饋中強化學習<br>Reinforcement Learning from Human Feedback</h1>
+  <div class="eyebrow">正體中文增修版 · 互動閱讀</div>
+  <h1>{book_title}</h1>
+  <p class="sub">Reinforcement Learning from Human Feedback</p>
   <p class="sub">Nathan Lambert 著。一本聚焦語言模型的 RLHF 與後訓練（post-training）簡明導論：從指令微調、獎勵模型，到 PPO／GRPO、DPO、拒絕採樣與推理模型。每一章都附有互動實驗，邊玩邊懂核心概念。</p>
-  <p class="sub" style="font-size:.82rem">由台灣 <a href="https://github.com/ai-twinkle">Twinkle AI Community</a> 翻譯維護的非官方社群翻譯版本。</p>
+  <p class="sub" style="font-size:.82rem">正體中文正文與互動網站基於 <a href="https://github.com/ai-twinkle/rlhf-book-zh-tw">Twinkle AI Community 的翻譯專案</a>，由 Yi-Wei Chen 增修。原書作者為 <a href="https://github.com/natolambert/rlhf-book">Nathan Lambert 與貢獻者</a>。</p>
   <div class="meta">
     <div><b>{n_ch}</b>章節</div>
     <div><b>{n_app}</b>附錄</div>
@@ -150,7 +164,7 @@ INDEX_TMPL = """<!DOCTYPE html>
 {appendix_cards}
   </div>
 </div>
-<footer class="foot">本站為 <a href="https://github.com/ai-twinkle">Twinkle AI Community</a>（台灣）的<strong>非官方社群翻譯</strong>（unofficial community translation），已獲原作者知悉（<a href="https://github.com/natolambert/rlhf-book/issues/472">rlhf-book#472</a>）· 譯自 Nathan Lambert,《Reinforcement Learning from Human Feedback》（<a href="https://rlhfbook.com">rlhfbook.com</a>，2026-07-01 版）· 依 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant">CC BY-NC-SA 4.0</a> 授權翻譯，僅供學習研究、不得作商業用途 · 支持原作者請購買<a href="https://rlhfbook.com">實體書</a> · <a href="https://github.com/ai-twinkle/rlhf-book-zh-tw">GitHub 原始碼</a></footer>
+<footer class="foot">{attribution}</footer>
 <script src="assets/gh-star.js"></script>
 </body>
 </html>
@@ -304,6 +318,7 @@ def build_pages():
         widget_tag = (f'<script src="../assets/widgets/{ch["id"]}.js"></script>\n'
                       if os.path.exists(widget) else "")
         page = PAGE_TMPL.format(
+            book_title=html.escape(BOOK_TITLE), attribution=ATTRIBUTION_HTML,
             title=f'{ch["no"]}　{ch["zh"]}', no=f'{ch["no"]}　{ch["zh"]}',
             prev_top=prev_top, next_top=next_top,
             prev_card=prev_card, next_card=next_card,
@@ -333,6 +348,7 @@ def build_index(built):
     widgets = os.path.join(WEBAPP, "assets", "widgets")
     n_lab = len([f for f in os.listdir(widgets) if f.endswith(".js")]) if os.path.isdir(widgets) else 0
     page = INDEX_TMPL.format(n_ch=17, n_app=3, n_fig=n_fig, n_lab=n_lab,
+                             book_title=html.escape(BOOK_TITLE), attribution=ATTRIBUTION_HTML,
                              chapter_cards=ch_cards, appendix_cards=app_cards)
     with open(os.path.join(WEBAPP, "index.html"), "w", encoding="utf-8") as f:
         f.write(page)
