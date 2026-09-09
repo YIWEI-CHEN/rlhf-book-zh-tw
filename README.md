@@ -4,7 +4,7 @@
 >
 > 原書《[Reinforcement Learning from Human Feedback](https://rlhfbook.com)》由 **Nathan Lambert 與貢獻者**撰寫，原始專案為 [natolambert/rlhf-book](https://github.com/natolambert/rlhf-book)。
 >
-> 本版的正體中文正文與互動閱讀網站，以 **Twinkle AI Community** 的 [ai-twinkle/rlhf-book-zh-tw](https://github.com/ai-twinkle/rlhf-book-zh-tw) 為基礎，由 **Yi-Wei Chen** 加入引用連結、文獻懸停預覽、公式跳轉與 Markdown 顯示修正，並非重新獨立翻譯，也不是原作者或 Twinkle AI 的官方增修版。
+> 本版的正體中文正文與互動閱讀網站，以 **Twinkle AI Community** 的 [ai-twinkle/rlhf-book-zh-tw](https://github.com/ai-twinkle/rlhf-book-zh-tw) 為基礎，由 **[Yi-Wei Chen](https://yiwei-chen.github.io/)** 加入引用連結、文獻懸停預覽、公式跳轉與 Markdown 顯示修正，並非重新獨立翻譯，也不是原作者或 Twinkle AI 的官方增修版。
 >
 > 書稿與翻譯沿用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant) 授權，保留原作者與翻譯社群署名，不得作商業用途。支持原作者請購買[實體書](https://rlhfbook.com)。
 
@@ -82,7 +82,7 @@ cd webapp && python3 -m http.server 8642   # 瀏覽 http://localhost:8642
 
 ## About (English)
 
-This is an **unofficial Traditional Chinese (zh-TW) revised edition**, maintained by Yi-Wei Chen, of *[Reinforcement Learning from Human Feedback](https://rlhfbook.com)* by Nathan Lambert and contributors ([original repository](https://github.com/natolambert/rlhf-book)). The translation and interactive website are based on the [Twinkle AI Community project](https://github.com/ai-twinkle/rlhf-book-zh-tw), with additional citation, equation-link, and Markdown-rendering fixes. This is not an official edition from the original author or Twinkle AI.
+This is an **unofficial Traditional Chinese (zh-TW) revised edition**, maintained by [Yi-Wei Chen](https://yiwei-chen.github.io/), of *[Reinforcement Learning from Human Feedback](https://rlhfbook.com)* by Nathan Lambert and contributors ([original repository](https://github.com/natolambert/rlhf-book)). The translation and interactive website are based on the [Twinkle AI Community project](https://github.com/ai-twinkle/rlhf-book-zh-tw), with additional citation, equation-link, and Markdown-rendering fixes. This is not an official edition from the original author or Twinkle AI.
 
 The translation source declares a 2026-07-01 edition. `book/v0.10` is a possible upstream baseline, not a verified match. The planned revised-edition repository is `rlhf-book-zhtw-edition`, starting at `v0.1`; PDF/EPUB downloads and upstream code integration are not yet available. Imported English READMEs will be preserved, with separate `README.zh-TW.md` documentation.
 

@@ -23,15 +23,15 @@ BIBLIOGRAPHY_DATA = os.path.join(WEBAPP, "assets", "bibliography.json")
 
 BOOK_TITLE = "RLHF - 從人類回饋中強化學習 (增修版)"
 ATTRIBUTION_HTML = (
-    '本站為<strong>非官方正體中文增修版</strong> · '
+    '本站為<strong>正體中文翻譯</strong> (<strong>非官方</strong>) · '
     '原書由 Nathan Lambert 與貢獻者撰寫：'
     '<a href="https://github.com/natolambert/rlhf-book">Reinforcement Learning from Human Feedback</a> · '
-    '正體中文正文與互動網站基於 '
+    '正體中文與互動網站基於 '
     '<a href="https://github.com/ai-twinkle/rlhf-book-zh-tw">Twinkle AI Community 的 ai-twinkle/rlhf-book-zh-tw</a> · '
     '本版由 Yi-Wei Chen 增修，並非原作者或 Twinkle AI 的官方增修版 · '
     '書稿與翻譯沿用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant">CC BY-NC-SA 4.0</a> '
     '授權，不得作商業用途 · 支持原作者請購買<a href="https://rlhfbook.com">實體書</a> · '
-    '<a href="https://github.com/YIWEI-CHEN/rlhf-book-zh-tw/tree/yiweichen/zhtw-edition-metadata">本版網站原始碼</a>'
+    '<a href="https://github.com/YIWEI-CHEN/rlhf-book-zh-tw/tree/yiweichen/zhtw-edition-metadata">網站原始碼</a>'
 )
 
 BIBLIOGRAPHY_HEADER = [
@@ -141,11 +141,11 @@ INDEX_TMPL = """<!DOCTYPE html>
 </head>
 <body>
 <section class="hero">
-  <div class="eyebrow">正體中文增修版 · 互動閱讀</div>
+  <div class="eyebrow">正體中文翻譯 · 互動閱讀</div>
   <h1>{book_title}</h1>
   <p class="sub">Reinforcement Learning from Human Feedback</p>
   <p class="sub">Nathan Lambert 著。一本聚焦語言模型的 RLHF 與後訓練（post-training）簡明導論：從指令微調、獎勵模型，到 PPO／GRPO、DPO、拒絕採樣與推理模型。每一章都附有互動實驗，邊玩邊懂核心概念。</p>
-  <p class="sub" style="font-size:.82rem">正體中文正文與互動網站基於 <a href="https://github.com/ai-twinkle/rlhf-book-zh-tw">Twinkle AI Community 的翻譯專案</a>，由 Yi-Wei Chen 增修。原書作者為 <a href="https://github.com/natolambert/rlhf-book">Nathan Lambert 與貢獻者</a>。</p>
+  <p class="sub" style="font-size:.82rem">正體中文與互動網站基於 <a href="https://github.com/ai-twinkle/rlhf-book-zh-tw">Twinkle AI Community 的翻譯專案</a>，由 Yi-Wei Chen 增修。原書作者為 <a href="https://github.com/natolambert/rlhf-book">Nathan Lambert 與貢獻者</a>。</p>
   <div class="meta">
     <div><b>{n_ch}</b>章節</div>
     <div><b>{n_app}</b>附錄</div>
