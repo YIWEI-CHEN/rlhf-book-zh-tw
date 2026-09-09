@@ -4,13 +4,13 @@
 >
 > 原書《[Reinforcement Learning from Human Feedback](https://rlhfbook.com)》由 **Nathan Lambert 與貢獻者**撰寫，原始專案為 [natolambert/rlhf-book](https://github.com/natolambert/rlhf-book)。
 >
-> 本版的正體中文正文與互動閱讀網站，以 **Twinkle AI Community** 的 [ai-twinkle/rlhf-book-zh-tw](https://github.com/ai-twinkle/rlhf-book-zh-tw) 為基礎，由 **[Yi-Wei Chen](https://yiwei-chen.github.io/)** 加入引用連結、文獻懸停預覽、公式跳轉與 Markdown 顯示修正，並非重新獨立翻譯，也不是原作者或 Twinkle AI 的官方增修版。
+> 本版的正體中文正文與互動閱讀網站，以 **Twinkle AI Community** 的 [ai-twinkle/rlhf-book-zh-tw](https://github.com/ai-twinkle/rlhf-book-zh-tw) 為基礎，由 **[Yi-Wei Chen](https://yiwei-chen.github.io/)** 加入引用連結、文獻預覽、公式跳轉與 Markdown 顯示修正，並非重新獨立翻譯，也不是原作者或 Twinkle AI 的官方增修版。
 >
 > 書稿與翻譯沿用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant) 授權，保留原作者與翻譯社群署名，不得作商業用途。支持原作者請購買[實體書](https://rlhfbook.com)。
 
 **📖 增修版線上閱讀：<https://yiwei-chen.github.io/rlhf-book-zh-tw/>**
 
-原正體中文翻譯與互動網站：[Twinkle AI Community 線上版](https://apps.twinkleai.tw/rlhf-book-zh-tw/)。
+原翻譯與互動網站：[Twinkle AI Community 線上版](https://apps.twinkleai.tw/rlhf-book-zh-tw/)。
 
 ## 增修版規格與來源版本
 
@@ -21,9 +21,7 @@
 
 目前提供 HTML 閱讀；PDF／EPUB 匯出及官方程式碼整合尚未完成，不代表已有可下載的 `v0.1` release。
 
-正體中文基底固定為 ai-twinkle 的 [`41834be`](https://github.com/ai-twinkle/rlhf-book-zh-tw/commit/41834be9275d000a864e275a7347e7e13941536e)。其 README 宣告翻譯依據為 **2026-07-01 版**；可能對應原書 [`book/v0.10`](https://github.com/natolambert/rlhf-book/releases/tag/book/v0.10)（2026-06-28 發布，commit `854a344dc316f4c147280a3448c31cd97d953b6d`），但**精確的英文原稿 commit 尚未確認**，因此不宣稱已驗證為 v0.10 或已同步最新英文版。
-
-匯入原書與 `code/` 時保留其原英文 `README.md`，正體中文說明另存為 `README.zh-TW.md`，不覆寫原文。書稿與各程式碼模組保留各自的授權、署名及 notices；不以書稿授權取代程式碼授權。完整命名與版本規格見 [EDITION.md](EDITION.md)。
+正體中文基底固定為 ai-twinkle 的 [`41834be`](https://github.com/ai-twinkle/rlhf-book-zh-tw/commit/41834be9275d000a864e275a7347e7e13941536e)。其 README 宣告翻譯依據為 **2026-07-01 版**；可能對應原書 [`book/v0.10`](https://github.com/natolambert/rlhf-book/releases/tag/book/v0.10)（2026-06-28 發布，commit `854a344dc316f4c147280a3448c31cd97d953b6d`）。
 
 原翻譯專案為每一章配備一個**互動實驗**，本版保留這些實驗，讓讀者能動手操作該章的核心概念——從 Bradley-Terry 偏好機率、PPO 裁剪目標、GRPO 群組優勢，到 DPO 損失曲面與前向／反向 KL 的收斂行為。
 
